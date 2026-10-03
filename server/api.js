@@ -93,28 +93,42 @@ export function getClientIp(req) {
 
 // Origin validation: reject mismatched Origin on state-mutating requests, allow missing Origin
 export function checkOrigin(req) {
-  const method = req.method.toUpperCase();
+  const method = (req.method || '').toUpperCase();
   if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     return true; // Safe methods exempt
   }
-  const origin = req.headers['origin'];
+  const origin = req.headers && req.headers['origin'];
   if (!origin) {
     return true; // Missing Origin allowed (Bearer token is primary control)
   }
-  const allowedOrigin = process.env.ALLOWED_ORIGIN;
+
+  // 1. Expected origin must be ALLOWED_ORIGIN if set
+  const allowedOrigin = process.env.ALLOWED_ORIGIN || '';
   if (allowedOrigin) {
     return origin === allowedOrigin;
   }
-  const host = req.headers['host'];
-  if (host) {
-    try {
-      const originUrl = new URL(origin);
-      if (originUrl.host === host) {
-        return true;
-      }
-    } catch {}
+
+  // 2. Otherwise derived from Host plus X-Forwarded-Proto ONLY when TRUST_PROXY=true
+  const host = req.headers && req.headers['host'];
+  if (!host) {
+    return false;
   }
-  return false;
+
+  const isTrustProxy = process.env.TRUST_PROXY === 'true';
+  let protocol = 'http';
+  if (isTrustProxy) {
+    const forwardedProto = req.headers['x-forwarded-proto'];
+    if (forwardedProto) {
+      protocol = String(forwardedProto).split(',')[0].trim().toLowerCase();
+    } else if (req.socket && req.socket.encrypted) {
+      protocol = 'https';
+    }
+  } else if (req.socket && req.socket.encrypted) {
+    protocol = 'https';
+  }
+
+  const expectedOrigin = `${protocol}://${host}`;
+  return origin === expectedOrigin;
 }
 
 // Configurable Rate Limiting: public GET, login, and write requests

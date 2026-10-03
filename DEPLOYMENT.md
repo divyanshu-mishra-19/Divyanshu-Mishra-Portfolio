@@ -9,7 +9,7 @@ This portfolio application includes a Node.js API backend and an embedded SQLite
 - **Unsupported Hosts**: **DO NOT** deploy to serverless or static-only hosts (such as Netlify, Vercel, Cloudflare Pages, or GitHub Pages). Ephemeral container filesystems will erase database modifications, audit logs, guestbook signatures, and uploaded media files on redeployment or restart.
 
 ## 2. Runtime & Node Engine Requirements
-- **Node.js**: `>= 22.5.0` (Required for native `node:sqlite` database engine support).
+- **Node.js**: Node >=22.13 (22.x LTS or 24.x); install via NodeSource/nvm; set ExecStart to the actual `which node` path. (Native `node:sqlite` is unflagged from Node.js 22.13).
 - Check version: `node -v`
 
 ---
@@ -55,12 +55,41 @@ Key settings:
 
 ## 5. Initial Data & Admin Setup (Out-of-Band)
 **Never track `portfolio.db` or `data/uploads` in Git.**
-Copy your prepared database and existing uploads to the host securely:
-```bash
-# From your local machine:
-scp portfolio.db user@your-server:/var/www/portfolio/portfolio.db
-rsync -avzP data/uploads/ user@your-server:/var/www/portfolio/data/uploads/
-```
+**CRITICAL RULES**:
+- **Never rsync the whole project folder** (directories like `backup/` and `scratch/` hold old historical data, unindexed assets, and temporary files that must never reach production).
+- **Never copy `portfolio.db-wal` or `portfolio.db-shm` separately** while the database is active (copying raw WAL/SHM files leads to database corruption).
+
+### Safe Database Deployment Steps:
+1. **Stop any local server** to ensure no active write transactions are pending.
+2. **Create an atomic snapshot using `VACUUM INTO deploy.db`**:
+   ```bash
+   node -e "
+   const { DatabaseSync } = require('node:sqlite');
+   const db = new DatabaseSync('portfolio.db');
+   db.exec('VACUUM INTO \'deploy.db\'');
+   db.close();
+   console.log('deploy.db snapshot created.');
+   "
+   ```
+   *(Or alternatively run `./scripts/backup-db.sh` and use the verified backup snapshot).*
+3. **Verify database integrity**:
+   ```bash
+   node -e "
+   const { DatabaseSync } = require('node:sqlite');
+   const db = new DatabaseSync('deploy.db');
+   console.log(db.prepare('PRAGMA integrity_check;').get());
+   db.close();
+   "
+   ```
+4. **Copy `deploy.db` to the server as `portfolio.db`**:
+   ```bash
+   scp deploy.db user@your-server:/var/www/portfolio/portfolio.db
+   rm deploy.db
+   ```
+5. **Sync only the uploaded media files directory**:
+   ```bash
+   rsync -avzP data/uploads/ user@your-server:/var/www/portfolio/data/uploads/
+   ```
 
 Reset the administrator password directly on the production host:
 ```bash
@@ -109,6 +138,7 @@ Type=simple
 User=www-data
 WorkingDirectory=/var/www/portfolio
 EnvironmentFile=/var/www/portfolio/.env
+# Set ExecStart to the actual `which node` path on your host (e.g. /usr/bin/node or ~/.nvm/versions/node/v22.x/bin/node)
 ExecStart=/usr/bin/node /var/www/portfolio/server/server.js
 Restart=always
 RestartSec=5
