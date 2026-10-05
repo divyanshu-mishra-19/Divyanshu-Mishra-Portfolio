@@ -2,8 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, FileCode, ArrowRight, CornerDownLeft } from 'lucide-react';
 import { portfolioData } from '../data/portfolioData';
+import { usePortfolioData } from '../context/PortfolioDataContext';
 
 export default function CommandPalette({ isOpen, onClose, onNavigate, onOpenMonitor }) {
+  const { data } = usePortfolioData();
+  const liveData = data || portfolioData;
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef(null);
@@ -13,7 +16,8 @@ export default function CommandPalette({ isOpen, onClose, onNavigate, onOpenMoni
     { type: 'Section', name: 'About Me', action: () => onNavigate('about'), icon: 'about.md' },
     { type: 'Section', name: 'Technical Skills Toolkit', action: () => onNavigate('skills'), icon: 'toolkit.jsx' },
     { type: 'Section', name: 'Projects Bookshelf', action: () => onNavigate('projects'), icon: 'projects/' },
-    { type: 'Section', name: 'Achievements & Verified Certificates', action: () => onNavigate('achievements'), icon: 'achievements/' },
+    { type: 'Section', name: 'Major Achievements & Case Studies', action: () => onNavigate('achievements'), icon: 'achievements/' },
+    { type: 'Section', name: 'Licenses & Certifications', action: () => onNavigate('certifications'), icon: 'certifications.md' },
     { type: 'Section', name: 'Positions of Responsibility & Leadership', action: () => onNavigate('responsibility'), icon: 'responsibility.jsx' },
     { type: 'Section', name: 'Education & Academic Coursework', action: () => onNavigate('education'), icon: 'education.md' },
     { 
@@ -40,21 +44,28 @@ export default function CommandPalette({ isOpen, onClose, onNavigate, onOpenMoni
       }, 
       icon: 'admin.auth' 
     },
-    ...portfolioData.projects.map((p) => ({
+    ...(liveData.certifications || []).map((c) => ({
+      type: 'Certification',
+      name: c.name,
+      sub: `${c.issuingOrganization || c.issuing_organization || ''} • ${c.issueDate || c.issue_date || '2026'}`,
+      action: () => onNavigate('certifications'),
+      icon: 'license.cert'
+    })),
+    ...(liveData.projects || []).map((p) => ({
       type: 'Project',
       name: p.title,
       sub: p.tagline,
       action: () => onNavigate('projects', p.id),
       icon: p.file || 'project.jsx'
     })),
-    ...portfolioData.achievements.map((a) => ({
+    ...(liveData.achievements || []).map((a) => ({
       type: 'Achievement',
       name: a.title,
       sub: `${a.badge || ''} • ${a.year || ''}`,
       action: () => onNavigate('achievements'),
       icon: a.file || 'achievement.md'
     })),
-    ...portfolioData.blog.map((b) => ({
+    ...(liveData.blog || []).map((b) => ({
       type: 'Article',
       name: b.title,
       sub: b.category,

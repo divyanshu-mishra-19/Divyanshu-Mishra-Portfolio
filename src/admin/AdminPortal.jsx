@@ -55,15 +55,20 @@ export default function AdminPortal({ onReturnToPortfolio }) {
     return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
-  // Admin Theme (dark | light)
+  // Admin Theme (dark | light) - inherits live website theme or saved preference
   const [adminTheme, setAdminTheme] = useState(() => {
-    return localStorage.getItem('admin-theme') || 'dark';
+    return localStorage.getItem('portfolio-theme') || localStorage.getItem('admin-theme') || 'dark';
   });
 
   const toggleAdminTheme = () => {
     setAdminTheme((prev) => {
       const next = prev === 'dark' ? 'light' : 'dark';
       localStorage.setItem('admin-theme', next);
+      localStorage.setItem('portfolio-theme', next);
+      document.documentElement.setAttribute('data-admin-theme', next);
+      document.documentElement.setAttribute('data-theme', next);
+      document.documentElement.classList.toggle('dark', next === 'dark');
+      document.documentElement.classList.toggle('light', next === 'light');
       return next;
     });
   };
@@ -77,6 +82,7 @@ export default function AdminPortal({ onReturnToPortfolio }) {
   useEffect(() => {
     document.body.classList.add('admin-active');
     document.documentElement.setAttribute('data-admin-active', 'true');
+    document.documentElement.setAttribute('data-admin-theme', adminTheme);
 
     const handlePointerMove = (e) => {
       setMousePos({ x: e.clientX, y: e.clientY });
@@ -87,9 +93,10 @@ export default function AdminPortal({ onReturnToPortfolio }) {
     return () => {
       document.body.classList.remove('admin-active');
       document.documentElement.removeAttribute('data-admin-active');
+      document.documentElement.removeAttribute('data-admin-theme');
       window.removeEventListener('pointermove', handlePointerMove);
     };
-  }, []);
+  }, [adminTheme]);
 
   // Add toast notification
   const addToast = (toast) => {
@@ -150,9 +157,11 @@ export default function AdminPortal({ onReturnToPortfolio }) {
 
   if (!isAuthenticated) {
     return (
-      <div className="font-sans admin-portal">
+      <div className="font-sans admin-portal" data-admin-theme={adminTheme}>
         <ToastContainer toasts={toasts} onDismiss={removeToast} />
         <AdminLogin
+          adminTheme={adminTheme}
+          onToggleTheme={toggleAdminTheme}
           onLoginSuccess={handleLoginSuccess}
           onReturnToPortfolio={onReturnToPortfolio}
         />
@@ -164,12 +173,14 @@ export default function AdminPortal({ onReturnToPortfolio }) {
     <div
       data-admin-theme={adminTheme}
       className={`min-h-screen ${
-        adminTheme === 'light' ? 'bg-[#f1f5f9] text-slate-800' : 'bg-[#0b0f17] text-slate-100'
+        adminTheme === 'light' ? 'bg-[#f8fafc] text-slate-800' : 'bg-[#0b0f17] text-slate-100'
       } font-sans selection:bg-amber-500/80 selection:text-slate-950 flex relative overflow-x-hidden admin-portal`}
     >
       {/* Ambient Cyber Cursor Follower Glow */}
       <div
-        className="fixed w-96 h-96 rounded-full pointer-events-none z-0 transition-opacity duration-300 opacity-20 -translate-x-1/2 -translate-y-1/2"
+        className={`fixed w-96 h-96 rounded-full pointer-events-none z-0 transition-opacity duration-300 ${
+          adminTheme === 'light' ? 'opacity-10' : 'opacity-20'
+        } -translate-x-1/2 -translate-y-1/2`}
         style={{
           background: 'radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, rgba(6, 182, 212, 0.08) 45%, transparent 70%)',
           left: mousePos.x,
@@ -179,8 +190,8 @@ export default function AdminPortal({ onReturnToPortfolio }) {
 
       {/* Background Cyber Orbs & Grid Pattern */}
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div className="absolute top-10 right-10 w-96 h-96 bg-amber-500/5 rounded-full blur-[140px]" />
-        <div className="absolute bottom-10 left-10 w-96 h-96 bg-cyan-500/5 rounded-full blur-[140px]" />
+        <div className={`absolute top-10 right-10 w-96 h-96 ${adminTheme === 'light' ? 'bg-amber-500/10' : 'bg-amber-500/5'} rounded-full blur-[140px]`} />
+        <div className={`absolute bottom-10 left-10 w-96 h-96 ${adminTheme === 'light' ? 'bg-sky-500/10' : 'bg-cyan-500/5'} rounded-full blur-[140px]`} />
         <div className="grid-pattern absolute inset-0 opacity-40" />
       </div>
 
@@ -201,7 +212,7 @@ export default function AdminPortal({ onReturnToPortfolio }) {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 lg:pl-72 flex flex-col min-h-screen relative z-10 w-full min-w-0">
+      <div className="flex-1 lg:pl-72 flex flex-col min-h-screen relative z-auto w-full min-w-0">
         {/* Top Header */}
         <AdminHeader
           activeTab={activeTab}

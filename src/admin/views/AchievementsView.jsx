@@ -15,6 +15,7 @@ import { adminApi } from '../adminApi.js';
 import { Modal, ConfirmDialog } from '../components/FeedbackModals.jsx';
 import { ImagePicker } from '../components/ImagePicker.jsx';
 import { safeImageSrc } from '../../utils/safeHref.js';
+import { getFallbackSkills } from '../../components/Achievements.jsx';
 
 export function AchievementsView({ onToast }) {
   const [achievements, setAchievements] = useState([]);
@@ -111,10 +112,30 @@ export function AchievementsView({ onToast }) {
 
     setSaving(true);
     try {
+      const fileSlug = (formData.title || formData.id || 'achievement')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+        .slice(0, 30);
+
+      const finalHighlights = (formData.key_highlights && formData.key_highlights.length > 0)
+        ? formData.key_highlights
+        : [
+            formData.metric || `${formData.badge || 'Honors'} • ${formData.issuer || formData.category || 'National Recognition'}`,
+            formData.desc || 'Demonstrated innovative technical engineering and competition merit.'
+          ];
+
+      const finalSkills = (formData.skills && formData.skills.length > 0)
+        ? formData.skills
+        : getFallbackSkills(formData);
+
       const payload = {
         ...formData,
         id: formData.id || `ach_${Date.now()}`,
-        spine_title: formData.spine_title || formData.title.slice(0, 18).toUpperCase()
+        file: formData.file || `${fileSlug}.md`,
+        spine_title: formData.spine_title || formData.title.slice(0, 18).toUpperCase(),
+        key_highlights: finalHighlights,
+        skills: finalSkills
       };
 
       if (editingItem) {
@@ -435,6 +456,127 @@ export function AchievementsView({ onToast }) {
               placeholder="Full narrative of your achievement, jury evaluation, and prototype architecture..."
               className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white leading-relaxed focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500"
             />
+          </div>
+
+          {/* Key Highlights / Impact Milestones */}
+          <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  Key Highlights & Milestones
+                </label>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  The 1st highlight is featured as the Sparkles banner on the card.
+                </p>
+              </div>
+              <span className="text-[11px] text-slate-400 font-mono">
+                {formData.key_highlights.length} highlights
+              </span>
+            </div>
+
+            <div className="space-y-1.5">
+              {formData.key_highlights.map((h, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200"
+                >
+                  <span className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                    <span>{h}</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeHighlight(i)}
+                    className="text-slate-400 hover:text-rose-400 text-sm px-1.5 cursor-pointer"
+                    title="Remove highlight"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={highlightInput}
+                onChange={(e) => setHighlightInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addHighlight();
+                  }
+                }}
+                placeholder="e.g. Ranked 1st Position among 40+ engineering teams nationwide"
+                className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500"
+              />
+              <button
+                type="button"
+                onClick={addHighlight}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl border border-slate-700 cursor-pointer"
+              >
+                Add Highlight
+              </button>
+            </div>
+          </div>
+
+          {/* Demonstrated Skills & Competencies */}
+          <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  Demonstrated Competencies & Skills
+                </label>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Displayed as colorful domain badges on the card and in the modal.
+                </p>
+              </div>
+              <span className="text-[11px] text-slate-400 font-mono">
+                {formData.skills.length} skills
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              {formData.skills.map((s) => (
+                <span
+                  key={s}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-mono"
+                >
+                  <span>{s}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeSkill(s)}
+                    className="text-amber-400 hover:text-rose-400 cursor-pointer"
+                    title="Remove skill"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={skillInput}
+                onChange={(e) => setSkillInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addSkill();
+                  }
+                }}
+                placeholder="Type skill (e.g. Computer Vision, Video Analytics) and press Enter"
+                className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500"
+              />
+              <button
+                type="button"
+                onClick={addSkill}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl border border-slate-700 cursor-pointer"
+              >
+                Add Skill
+              </button>
+            </div>
           </div>
 
           {/* Supporting Photos (2-3+ photos) */}

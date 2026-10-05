@@ -238,7 +238,7 @@ export function EducationView({ onToast }) {
 
                 <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-sky-400 shrink-0 overflow-hidden">
                   {item.logo ? (
-                    <img loading="lazy" decoding="async" src={safeImageSrc(item.logo)} alt={item.institution} className="w-full h-full object-cover" />
+                    <img loading="lazy" decoding="async" src={safeImageSrc(item.logo)} alt={item.institution} className="w-full h-full object-contain p-1" />
                   ) : (
                     <GraduationCap className="w-6 h-6" />
                   )}

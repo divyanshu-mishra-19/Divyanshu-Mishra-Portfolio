@@ -8,6 +8,7 @@ import About from './components/About';
 import Toolkit from './components/Toolkit';
 import Projects from './components/Projects';
 import Achievements from './components/Achievements';
+import Certifications from './components/Certifications';
 import PositionsOfResponsibility from './components/PositionsOfResponsibility';
 import Education from './components/Education';
 import SystemMonitor from './components/SystemMonitor';
@@ -80,6 +81,7 @@ export default function App() {
     const validTheme = newTheme === 'light' ? 'light' : 'dark';
     setCurrentTheme(validTheme);
     localStorage.setItem('portfolio-theme', validTheme);
+    localStorage.setItem('admin-theme', validTheme);
     document.documentElement.setAttribute('data-theme', validTheme);
     document.documentElement.classList.toggle('dark', validTheme === 'dark');
     document.documentElement.classList.toggle('light', validTheme === 'light');
@@ -114,6 +116,7 @@ export default function App() {
       'skills', 
       'projects', 
       'achievements',
+      'certifications',
       'responsibility',
       'education',
       'behind-the-code', 
@@ -285,8 +288,11 @@ export default function App() {
           }}
         />
 
-        {/* Dedicated Achievements Section with Multi-Image Photo Proofs & Interactive Certificates */}
+        {/* Dedicated Achievements Section with Multi-Image Photo Proofs & Case Studies */}
         <Achievements />
+
+        {/* Dedicated Licenses & Certifications Section (Verifiable Credentials & Uncropped Certificate Inspection) */}
+        <Certifications />
 
         {/* Dedicated Positions of Responsibility Section */}
         <PositionsOfResponsibility />

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { portfolioData } from '../data/portfolioData';
 import { usePortfolioData } from '../context/PortfolioDataContext';
+import { safeImageSrc } from '../utils/safeHref';
 import {
   GraduationCap,
   Calendar,
@@ -22,6 +23,16 @@ import {
 } from 'lucide-react';
 
 const educationThemes = {
+  'nit-btech': {
+    accent: '#0ea5e9',
+    accentText: '#0284c7',
+    glow: 'rgba(14, 165, 233, 0.28)',
+    topGradient: 'linear-gradient(90deg, #0ea5e9, #38bdf8, #818cf8)',
+    gradeBadge: 'linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(99, 102, 241, 0.18))',
+    iconColor: '#38bdf8',
+    panelBg: 'linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(14, 165, 233, 0.02) 100%)',
+    panelBorder: 'rgba(14, 165, 233, 0.25)',
+  },
   'nit-nagaland': {
     accent: '#0ea5e9',
     accentText: '#0284c7',
@@ -250,19 +261,56 @@ export default function Education() {
                 </div>
               </div>
 
-              {/* Institution & Degree - Razor-sharp contrast */}
-              <div className="mb-4 relative z-10">
-                <h3 className="text-xl sm:text-2xl font-bold font-sans text-slate-900 dark:text-slate-100 transition-colors">
-                  {edu.degree}
-                </h3>
-                <div className="flex items-center gap-2.5 text-xs sm:text-sm font-mono mt-2">
+              {/* Institution & Degree - Razor-sharp contrast with Crest / Logo */}
+              <div className="mb-5 relative z-10 flex items-start gap-3.5 sm:gap-4">
+                {edu.logo ? (
                   <div
-                    className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 shadow-xs"
-                    style={{ background: `${accentColor}20`, color: accentColor, border: `1px solid ${accentColor}45` }}
+                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl p-1 shrink-0 flex items-center justify-center overflow-hidden bg-white/95 dark:bg-slate-900/90 shadow-md transition-all duration-300 group-hover:scale-105"
+                    style={{
+                      border: `1.5px solid ${accentColor}55`,
+                      boxShadow: `0 4px 16px -2px ${theme.glow}`
+                    }}
                   >
-                    <Building2 className="w-3.5 h-3.5" />
+                    <img
+                      loading="lazy"
+                      decoding="async"
+                      src={safeImageSrc(edu.logo)}
+                      alt={`${edu.institution} logo`}
+                      className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        if (e.currentTarget.nextElementSibling) {
+                          e.currentTarget.nextElementSibling.style.display = 'flex';
+                        }
+                      }}
+                    />
+                    <div
+                      className="hidden w-full h-full items-center justify-center"
+                      style={{ background: `${accentColor}18`, color: accentColor }}
+                    >
+                      <Building2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                    </div>
                   </div>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">{edu.institution}</span>
+                ) : (
+                  <div
+                    className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center shrink-0 shadow-xs transition-all duration-300 group-hover:scale-105"
+                    style={{
+                      background: `${accentColor}18`,
+                      color: accentColor,
+                      border: `1.5px solid ${accentColor}40`,
+                    }}
+                  >
+                    <Building2 className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </div>
+                )}
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xl sm:text-2xl font-bold font-sans text-slate-900 dark:text-slate-100 transition-colors leading-snug">
+                    {edu.degree}
+                  </h3>
+                  <div className="flex items-center gap-2 text-xs sm:text-sm font-mono mt-1.5 text-slate-700 dark:text-slate-300 font-semibold">
+                    <span className="truncate">{edu.institution}</span>
+                  </div>
                 </div>
               </div>
 

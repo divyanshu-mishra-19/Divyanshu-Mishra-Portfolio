@@ -66,7 +66,7 @@ export default function About({ onNavigate }) {
               rel="noopener noreferrer"
               className="font-bold text-rose-400 underline decoration-rose-400/40 hover:decoration-rose-400 transition-all inline-flex items-center gap-0.5 hover:text-rose-300"
             >
-              NIT Nagaland (CGPA: 8.81) <ExternalLink className="w-3.5 h-3.5" />
+              NIT Nagaland (CGPA: 8.80) <ExternalLink className="w-3.5 h-3.5" />
             </a>
             . My work spans{' '}
             <button

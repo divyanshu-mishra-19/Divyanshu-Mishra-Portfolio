@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   FileCheck,
   Plus,
@@ -8,12 +9,14 @@ import {
   ChevronUp,
   ChevronDown,
   Calendar,
-  ShieldCheck
+  ShieldCheck,
+  Maximize2,
+  X
 } from 'lucide-react';
 import { adminApi } from '../adminApi.js';
 import { Modal, ConfirmDialog } from '../components/FeedbackModals.jsx';
 import { ImagePicker } from '../components/ImagePicker.jsx';
-import { safeHref } from '../../utils/safeHref.js';
+import { safeHref, safeImageSrc } from '../../utils/safeHref.js';
 
 export function CertificationsView({ onToast }) {
   const [certifications, setCertifications] = useState([]);
@@ -22,6 +25,7 @@ export function CertificationsView({ onToast }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState(null);
 
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -197,9 +201,28 @@ export function CertificationsView({ onToast }) {
                   </button>
                 </div>
 
-                <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-violet-400 shrink-0">
-                  <ShieldCheck className="w-6 h-6" />
-                </div>
+                {item.certificate_file ? (
+                  <div
+                    onClick={() => setFullscreenImage({ url: item.certificate_file, title: item.name, issuer: item.issuing_organization })}
+                    className="w-16 h-12 rounded-xl bg-slate-950 border border-slate-700/80 flex items-center justify-center overflow-hidden shrink-0 cursor-pointer relative group p-0.5 shadow-sm"
+                    title="Click to view full certificate (uncropped)"
+                  >
+                    <img
+                      loading="lazy"
+                      decoding="async"
+                      src={safeImageSrc(item.certificate_file)}
+                      alt={item.name}
+                      className="max-h-full max-w-full w-auto h-auto object-contain select-none"
+                    />
+                    <div className="absolute inset-0 bg-slate-950/70 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                      <Maximize2 className="w-3.5 h-3.5 text-sky-400" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-violet-400 shrink-0">
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                )}
 
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -404,6 +427,54 @@ export function CertificationsView({ onToast }) {
         onConfirm={handleDelete}
         onCancel={() => setDeleteConfirmId(null)}
       />
+
+      {/* Fullscreen Certificate Lightbox Modal (Zero Cropping) */}
+      {fullscreenImage && typeof document !== 'undefined' && createPortal(
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setFullscreenImage(null);
+          }}
+          className="fixed inset-0 z-[10000] bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
+        >
+          <div className="relative max-w-[96vw] max-h-[94vh] flex flex-col items-center">
+            <div className="w-full flex items-center justify-between pb-3 px-1 text-white">
+              <div>
+                <h3 className="text-sm font-bold text-slate-100 truncate">{fullscreenImage.title}</h3>
+                <span className="text-xs font-mono text-emerald-400">@{fullscreenImage.issuer}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href={safeHref(fullscreenImage.url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-200 flex items-center gap-1.5"
+                  title="Open original file"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Open Original</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setFullscreenImage(null)}
+                  className="p-1.5 rounded-xl bg-slate-800 hover:bg-rose-900 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                  title="Close preview"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-slate-950 p-2 sm:p-4 overflow-hidden shadow-2xl flex items-center justify-center max-h-[84vh]">
+              <img
+                src={safeImageSrc(fullscreenImage.url)}
+                alt={fullscreenImage.title}
+                className="max-h-[80vh] max-w-[92vw] w-auto h-auto object-contain rounded-xl select-none"
+              />
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

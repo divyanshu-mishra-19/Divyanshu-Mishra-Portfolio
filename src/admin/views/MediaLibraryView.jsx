@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Image as ImageIcon,
   Upload,
@@ -12,7 +13,9 @@ import {
   File,
   HardDrive,
   Calendar,
-  Layers
+  Layers,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 import { adminApi } from '../adminApi.js';
 import { ConfirmDialog } from '../components/FeedbackModals.jsx';
@@ -27,6 +30,7 @@ export function MediaLibraryView({ onToast }) {
   const [copiedId, setCopiedId] = useState(null);
 
   const [previewMedia, setPreviewMedia] = useState(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -275,33 +279,57 @@ export function MediaLibraryView({ onToast }) {
       </div>
 
       {/* Preview Modal */}
-      {previewMedia && (
-        <div className="fixed inset-0 z-[9990] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md">
-          <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-2xl text-slate-200 space-y-4 max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+      {previewMedia && typeof document !== 'undefined' && createPortal(
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setPreviewMedia(null);
+              setIsFullscreen(false);
+            }
+          }}
+          className="admin-modal-overlay fixed inset-0 z-[9990] flex items-center justify-center p-2 sm:p-4 bg-slate-950/85 backdrop-blur-md"
+        >
+          <div className={`admin-modal-card w-full ${isFullscreen ? 'max-w-[98vw] h-[96vh]' : 'max-w-3xl max-h-[92vh]'} bg-slate-900 border border-slate-800 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-2xl text-slate-200 flex flex-col transition-all duration-300`}>
+            <div className="admin-modal-header flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
               <div className="truncate mr-4">
                 <h3 className="font-bold text-white text-sm truncate">{previewMedia.original_name || previewMedia.filename}</h3>
                 <span className="text-[11px] text-slate-400 font-mono">
                   {formatSize(previewMedia.file_size)} • {previewMedia.mime_type}
                 </span>
               </div>
-              <button
-                type="button"
-                onClick={() => setPreviewMedia(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-1.5 shrink-0">
+                {previewMedia.mime_type?.startsWith('image/') && (
+                  <button
+                    type="button"
+                    onClick={() => setIsFullscreen(!isFullscreen)}
+                    className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+                    title={isFullscreen ? 'Exit Full Screen' : 'Toggle Full Screen (Zero Cropping)'}
+                  >
+                    {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPreviewMedia(null);
+                    setIsFullscreen(false);
+                  }}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+                  title="Close"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
-            <div className="max-h-[50vh] flex items-center justify-center bg-slate-950 rounded-2xl overflow-hidden p-2">
+            <div className={`flex-1 flex items-center justify-center bg-slate-950 rounded-2xl overflow-hidden p-2 sm:p-4 my-3 border border-white/5 ${isFullscreen ? 'max-h-[78vh]' : 'min-h-[280px] max-h-[62vh]'}`}>
               {previewMedia.mime_type?.startsWith('image/') ? (
                 <img
                   loading="lazy"
                   decoding="async"
                   src={safeImageSrc(previewMedia.file_path)}
                   alt={previewMedia.filename}
-                  className="max-h-[46vh] max-w-full object-contain rounded-xl"
+                  className="max-h-full max-w-full w-auto h-auto object-contain rounded-xl select-none"
                 />
               ) : (
                 <div className="py-12 text-center space-y-2">
@@ -311,7 +339,7 @@ export function MediaLibraryView({ onToast }) {
               )}
             </div>
 
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
               <span className="font-mono text-xs text-slate-400 bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 truncate max-w-sm">
                 {previewMedia.file_path}
               </span>
@@ -320,7 +348,7 @@ export function MediaLibraryView({ onToast }) {
                 <button
                   type="button"
                   onClick={() => copyUrl(previewMedia)}
-                  className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center gap-1.5"
+                  className="flex-1 sm:flex-initial px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer"
                 >
                   <Copy className="w-3.5 h-3.5" />
                   <span>Copy URL</span>
@@ -329,7 +357,7 @@ export function MediaLibraryView({ onToast }) {
                   href={safeHref(previewMedia.file_path)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs"
+                  className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs flex items-center justify-center"
                   title="Open Original"
                   aria-label="Open Original"
                 >
@@ -338,7 +366,8 @@ export function MediaLibraryView({ onToast }) {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Delete Dialog */}

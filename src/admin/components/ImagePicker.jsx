@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Upload, Image as ImageIcon, Check, X, FolderOpen } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Upload, Image as ImageIcon, Check, X, FolderOpen, Maximize2, ExternalLink } from 'lucide-react';
 import { adminApi } from '../adminApi.js';
-import { safeImageSrc } from '../../utils/safeHref.js';
+import { safeHref, safeImageSrc } from '../../utils/safeHref.js';
 
 export function ImagePicker({ label, value, onChange, placeholder = '/images/... or https://...' }) {
   const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [isFullscreenPreviewOpen, setIsFullscreenPreviewOpen] = useState(false);
   const [mediaList, setMediaList] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -49,19 +51,35 @@ export function ImagePicker({ label, value, onChange, placeholder = '/images/...
       {label && <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">{label}</label>}
 
       <div className="flex items-center gap-2">
-        {/* Preview thumbnail */}
-        <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700/80 overflow-hidden flex items-center justify-center shrink-0 relative group">
+        {/* Preview thumbnail with ZERO cropping (object-contain) & full-screen button */}
+        <div className="w-14 h-14 rounded-xl bg-slate-950 border border-slate-700/80 overflow-hidden flex items-center justify-center shrink-0 relative group p-1">
           {value ? (
             <>
-              <img loading="lazy" decoding="async" src={safeImageSrc(value)} alt="Preview" className="w-full h-full object-cover" />
-              <button
-                type="button"
-                onClick={() => onChange('')}
-                className="absolute inset-0 bg-rose-950/80 text-rose-300 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                title="Remove image"
-              >
-                <X className="w-4 h-4" />
-              </button>
+              <img
+                loading="lazy"
+                decoding="async"
+                src={safeImageSrc(value)}
+                alt="Preview"
+                className="max-w-full max-h-full w-auto h-auto object-contain rounded select-none"
+              />
+              <div className="absolute inset-0 bg-slate-950/80 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-1.5 transition-opacity">
+                <button
+                  type="button"
+                  onClick={() => setIsFullscreenPreviewOpen(true)}
+                  className="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 transition-colors"
+                  title="View Full Screen (Uncropped)"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onChange('')}
+                  className="p-1 rounded bg-rose-950/90 hover:bg-rose-900 text-rose-300 transition-colors"
+                  title="Remove image"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </>
           ) : (
             <ImageIcon className="w-5 h-5 text-slate-500" />
@@ -99,7 +117,7 @@ export function ImagePicker({ label, value, onChange, placeholder = '/images/...
         <button
           type="button"
           onClick={() => setIsLibraryOpen(true)}
-          className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-medium text-slate-200 flex items-center gap-1.5 transition-colors shrink-0"
+          className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-medium text-slate-200 flex items-center gap-1.5 transition-colors shrink-0 cursor-pointer"
           title="Browse media library"
         >
           <FolderOpen className="w-4 h-4 text-amber-400" />
@@ -117,7 +135,56 @@ export function ImagePicker({ label, value, onChange, placeholder = '/images/...
 
       {uploadError && <p className="text-xs text-rose-400 mt-1">{uploadError}</p>}
 
-      {/* Media Library Picker Modal */}
+      {/* Full-Screen Lightbox for the Uploaded Image (Zero Cropping) */}
+      {isFullscreenPreviewOpen && value && typeof document !== 'undefined' && createPortal(
+        <div
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsFullscreenPreviewOpen(false);
+          }}
+          className="fixed inset-0 z-[10000] bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
+        >
+          <div className="relative max-w-[95vw] max-h-[92vh] flex flex-col items-center">
+            {/* Top Toolbar */}
+            <div className="w-full flex items-center justify-between pb-3 px-1 text-white">
+              <span className="text-xs font-mono text-slate-400 truncate max-w-md">
+                {value}
+              </span>
+              <div className="flex items-center gap-2">
+                <a
+                  href={safeHref(value)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-200 flex items-center gap-1.5"
+                  title="Open original file"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-sky-400" />
+                  <span>Open Original</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setIsFullscreenPreviewOpen(false)}
+                  className="p-1.5 rounded-xl bg-slate-800 hover:bg-rose-900 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                  title="Close preview"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Uncropped Full Image */}
+            <div className="rounded-2xl border border-white/10 bg-slate-950/80 p-2 overflow-hidden shadow-2xl flex items-center justify-center max-h-[82vh]">
+              <img
+                src={safeImageSrc(value)}
+                alt="Full uncropped preview"
+                className="max-h-[80vh] max-w-[92vw] w-auto h-auto object-contain rounded-xl select-none"
+              />
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Media Library Picker Modal with Uncropped Thumbnails */}
       {isLibraryOpen && (
         <div className="fixed inset-0 z-[9995] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl text-slate-200 max-h-[80vh] flex flex-col">
@@ -129,7 +196,7 @@ export function ImagePicker({ label, value, onChange, placeholder = '/images/...
               <button
                 type="button"
                 onClick={() => setIsLibraryOpen(false)}
-                className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
+                className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -150,7 +217,7 @@ export function ImagePicker({ label, value, onChange, placeholder = '/images/...
                         onChange(m.file_path);
                         setIsLibraryOpen(false);
                       }}
-                      className={`group relative rounded-xl border overflow-hidden aspect-video cursor-pointer transition-all ${
+                      className={`group relative rounded-xl border overflow-hidden aspect-video cursor-pointer transition-all bg-slate-950 flex items-center justify-center p-1 ${
                         isSelected
                           ? 'border-amber-500 ring-2 ring-amber-500/50'
                           : 'border-white/10 hover:border-amber-500/40'
@@ -161,7 +228,7 @@ export function ImagePicker({ label, value, onChange, placeholder = '/images/...
                         decoding="async"
                         src={safeImageSrc(m.file_path)}
                         alt={m.filename}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                        className="max-h-full max-w-full w-auto h-auto object-contain group-hover:scale-105 transition-transform"
                       />
                       <div className="absolute inset-0 bg-[#080d18]/70 opacity-0 group-hover:opacity-100 flex items-center justify-center p-2 text-center transition-opacity">
                         <span className="text-[10px] text-white font-medium truncate block max-w-full">
@@ -183,7 +250,7 @@ export function ImagePicker({ label, value, onChange, placeholder = '/images/...
               <button
                 type="button"
                 onClick={() => setIsLibraryOpen(false)}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sm font-medium rounded-xl text-slate-200 transition-colors"
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sm font-medium rounded-xl text-slate-200 transition-colors cursor-pointer"
               >
                 Close
               </button>

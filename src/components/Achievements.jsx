@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { portfolioData } from '../data/portfolioData';
 import { usePortfolioData } from '../context/PortfolioDataContext';
-import { safeHref, safeImageSrc } from '../utils/safeHref';
+import { safeImageSrc } from '../utils/safeHref';
 import {
   Trophy,
   Award,
@@ -12,15 +12,10 @@ import {
   ChevronLeft,
   ChevronRight,
   ExternalLink,
-  ShieldCheck,
   CheckCircle2,
   Calendar,
   Building2,
-  Printer,
-  Copy,
-  Check,
   X,
-  FileCheck,
   Images,
   Maximize2
 } from 'lucide-react';
@@ -76,11 +71,79 @@ function getAchievementTheme(achievement) {
   if (achievementThemes[achievement.id]) {
     return achievementThemes[achievement.id];
   }
+  const idStr = (achievement.id || '').toLowerCase();
+  const titleStr = (achievement.title || '').toLowerCase();
   const badgeStr = (achievement.badge || '').toLowerCase();
+
+  // Smart India Hackathon theme
+  if (idStr.includes('sih') || titleStr.includes('smart india') || titleStr.includes('sih')) {
+    return {
+      accent: '#06b6d4',
+      glow: 'rgba(6, 182, 212, 0.25)',
+      border: 'rgba(6, 182, 212, 0.35)',
+      borderHover: 'rgba(6, 182, 212, 0.8)',
+      topBarGradient: 'linear-gradient(90deg, #06b6d4, #10b981, #f59e0b)',
+      badgeClass: 'from-cyan-500/25 to-emerald-500/25 border-cyan-500/50 text-cyan-200',
+      highlightBg: 'bg-cyan-500/10 border-cyan-500/30 text-cyan-300',
+      iconColor: '#22d3ee',
+      actionText: 'text-cyan-400 group-hover:text-cyan-300',
+    };
+  }
+
   if (badgeStr.includes('hackathon')) return achievementThemes['capabl-saksham-hackathon'];
   if (badgeStr.includes('prize') || badgeStr.includes('winner') || badgeStr.includes('1st')) return achievementThemes['national-ideathon-1st-prize'];
-  if (badgeStr.includes('isro') || badgeStr.includes('space')) return achievementThemes['bharatiya-antariksh-hackathon'];
-  return achievementThemes['mr-talent-nit-nagaland'];
+  if (badgeStr.includes('isro') || badgeStr.includes('space') || badgeStr.includes('antariksh')) return achievementThemes['bharatiya-antariksh-hackathon'];
+
+  // Dynamic fallback palette for any new custom card to guarantee vibrant unique styling
+  const palette = [
+    achievementThemes['capabl-saksham-hackathon'],
+    achievementThemes['national-ideathon-1st-prize'],
+    achievementThemes['bharatiya-antariksh-hackathon'],
+    achievementThemes['mr-talent-nit-nagaland'],
+  ];
+  let hash = 0;
+  const str = achievement.id || achievement.title || 'achievement';
+  for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) >>> 0;
+  return palette[hash % palette.length];
+}
+
+export function getFallbackSkills(achievement) {
+  const combined = `${achievement?.title || ''} ${achievement?.desc || ''} ${achievement?.category || ''}`.toLowerCase();
+  const inferred = [];
+  if (combined.includes('vision') || combined.includes('cctv') || combined.includes('surveillance') || combined.includes('image')) {
+    inferred.push('Computer Vision', 'Video Analytics');
+  }
+  if (combined.includes('ai') || combined.includes('agent') || combined.includes('intelligence')) {
+    inferred.push('Agentic AI Workflows');
+  }
+  if (combined.includes('hackathon') || combined.includes('prototype') || combined.includes('ideathon')) {
+    inferred.push('Rapid Prototyping');
+  }
+  if (combined.includes('python')) inferred.push('Python');
+  if (combined.includes('react') || combined.includes('web') || combined.includes('frontend')) inferred.push('React.js');
+  if (combined.includes('iot') || combined.includes('hardware') || combined.includes('sensor') || combined.includes('edge')) inferred.push('Edge Systems');
+  if (combined.includes('lead') || combined.includes('president') || combined.includes('lead')) inferred.push('Technical Leadership');
+
+  if (inferred.length < 3) {
+    if (achievement?.category && !inferred.includes(achievement.category)) inferred.push(achievement.category);
+    ['Innovation', 'Problem Solving', 'Engineering'].forEach(k => {
+      if (!inferred.includes(k) && inferred.length < 4) inferred.push(k);
+    });
+  }
+  return inferred.slice(0, 5);
+}
+
+export function getFallbackHighlight(achievement) {
+  if (achievement?.keyHighlights && achievement.keyHighlights.length > 0 && achievement.keyHighlights[0]) {
+    return achievement.keyHighlights[0];
+  }
+  if (achievement?.metric && achievement.metric.trim()) {
+    return achievement.metric;
+  }
+  if (achievement?.badge) {
+    return `${achievement.badge} • ${achievement.issuer || achievement.category || 'National Recognition'}`;
+  }
+  return 'Verified Merit & Demonstrated Engineering Impact';
 }
 
 const badgeColors = {
@@ -91,40 +154,41 @@ const badgeColors = {
 };
 
 // =========================================================================
-// INTERACTIVE ACHIEVEMENT & MULTI-IMAGE CERTIFICATE MODAL
+// INTERACTIVE ACHIEVEMENT & MULTI-IMAGE GALLERY / CASE STUDY MODAL
 // =========================================================================
-function AchievementModal({ achievement, initialTab = 'certificate', onClose }) {
-  const [activeTab, setActiveTab] = useState(initialTab); // 'certificate' | 'overview' | 'photos'
-  const [copied, setCopied] = useState(false);
+function AchievementModal({ achievement, initialTab = 'photos', onClose }) {
+  const [activeTab, setActiveTab] = useState(initialTab); // 'photos' | 'overview'
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
+  const [isFullscreenPhoto, setIsFullscreenPhoto] = useState(false);
+
+  const images = achievement?.images || [];
+
+  useEffect(() => {
+    if (!isFullscreenPhoto || !achievement) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsFullscreenPhoto(false);
+      if (e.key === 'ArrowLeft' && images.length > 1) {
+        setActivePhotoIdx((prev) => (prev > 0 ? prev - 1 : images.length - 1));
+      }
+      if (e.key === 'ArrowRight' && images.length > 1) {
+        setActivePhotoIdx((prev) => (prev < images.length - 1 ? prev + 1 : 0));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreenPhoto, images.length, achievement]);
 
   if (!achievement) return null;
 
-  const {
-    title,
-    desc,
-    year,
-    badge,
-    issuer,
-    category,
-    images = [],
-    detailedDescription,
-    keyHighlights = [],
-    skills = [],
-    certificate
-  } = achievement;
-
-  const handleCopyId = () => {
-    if (certificate?.credentialId) {
-      navigator.clipboard.writeText(certificate.credentialId);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2200);
-    }
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
+  const resolvedHighlights = (keyHighlights && keyHighlights.length > 0)
+    ? keyHighlights
+    : [
+        getFallbackHighlight(achievement),
+        achievement.desc || 'Demonstrated innovative technical engineering and competition merit.'
+      ];
+  const resolvedSkills = (skills && skills.length > 0)
+    ? skills
+    : getFallbackSkills(achievement);
 
   return createPortal(
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
@@ -151,21 +215,21 @@ function AchievementModal({ achievement, initialTab = 'certificate', onClose }) 
       >
         {/* Modal Top Bar */}
         <div
-          className="p-4 sm:p-5 border-b flex flex-wrap items-center justify-between gap-3 bg-slate-900/40"
+          className="p-4 sm:p-5 border-b flex flex-wrap items-center justify-between gap-3 bg-slate-100/70 dark:bg-slate-900/40"
           style={{ borderColor: 'var(--theme-border, rgba(255, 255, 255, 0.08))' }}
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0 shadow-sm">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-500 dark:text-amber-400 shrink-0 shadow-sm">
               <Trophy className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border bg-gradient-to-r ${badgeColors[badge] || 'border-amber-500/30 text-amber-300'}`}>
+                <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border bg-gradient-to-r ${badgeColors[badge] || 'border-amber-500/30 text-amber-600 dark:text-amber-300'}`}>
                   {badge}
                 </span>
-                <span className="text-xs font-mono text-slate-400">{year}</span>
+                <span className="text-xs font-mono text-slate-500 dark:text-slate-400">{year}</span>
               </div>
-              <h3 className="text-base sm:text-lg font-bold text-slate-100 tracking-tight leading-snug line-clamp-1 font-sans">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-snug line-clamp-1 font-sans">
                 {title}
               </h3>
             </div>
@@ -173,24 +237,13 @@ function AchievementModal({ achievement, initialTab = 'certificate', onClose }) 
 
           {/* Tab Switcher & Close */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center p-1 rounded-xl bg-slate-950/70 border border-white/10 text-xs font-mono">
-              <button
-                onClick={() => setActiveTab('certificate')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                  activeTab === 'certificate'
-                    ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-                type="button"
-              >
-                Certificate
-              </button>
+            <div className="flex items-center p-1 rounded-xl bg-slate-200/80 dark:bg-slate-950/70 border border-slate-300/80 dark:border-white/10 text-xs font-mono">
               <button
                 onClick={() => setActiveTab('photos')}
                 className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeTab === 'photos'
-                    ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold border border-amber-500/40 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
                 type="button"
               >
@@ -199,20 +252,21 @@ function AchievementModal({ achievement, initialTab = 'certificate', onClose }) 
               </button>
               <button
                 onClick={() => setActiveTab('overview')}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
                   activeTab === 'overview'
-                    ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold border border-amber-500/40 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
                 type="button"
               >
-                Case Study
+                <Zap className="w-3.5 h-3.5" />
+                <span>Case Study</span>
               </button>
             </div>
 
             <button
               onClick={onClose}
-              className="p-2 rounded-xl border border-white/10 bg-slate-950/70 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              className="p-2 rounded-xl border border-slate-300/80 dark:border-white/10 bg-slate-200/60 dark:bg-slate-950/70 hover:bg-slate-300/60 dark:hover:bg-white/10 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
               title="Close modal"
               aria-label="Close modal"
               type="button"
@@ -224,143 +278,33 @@ function AchievementModal({ achievement, initialTab = 'certificate', onClose }) 
 
         {/* Modal Scroll Content */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
-          {activeTab === 'certificate' && certificate && (
-            <div className="space-y-6">
-              {/* Authenticated Certificate Card */}
-              <div
-                className="relative rounded-2xl border-2 p-6 sm:p-10 overflow-hidden shadow-inner flex flex-col justify-between min-h-[440px]"
-                style={{
-                  background: 'radial-gradient(ellipse at 50% 30%, #1e293b 0%, #090d16 100%)',
-                  borderColor: 'rgba(245, 158, 11, 0.45)',
-                  boxShadow: '0 0 50px rgba(245,158,11,0.1), inset 0 0 40px rgba(0,0,0,0.8)',
-                }}
-              >
-                {/* Decorative Guilloche Border Lines */}
-                <div className="absolute inset-2 border border-amber-500/20 rounded-xl pointer-events-none" />
-                <div className="absolute inset-3 border border-dashed border-amber-500/15 rounded-lg pointer-events-none" />
-
-                {/* Watermark in background */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none text-slate-100 font-serif font-black text-8xl tracking-widest uppercase">
-                  VERIFIED
-                </div>
-
-                {/* Certificate Header */}
-                <div className="relative z-10 text-center space-y-2">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-[11px] font-bold uppercase tracking-widest">
-                    <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>{certificate.status || 'Verified Institute Credential'}</span>
-                  </div>
-                  <h4 className="text-xl sm:text-2xl md:text-3xl font-serif font-black text-slate-100 tracking-tight pt-2">
-                    {certificate.organization}
-                  </h4>
-                  <p className="text-xs sm:text-sm font-mono text-slate-400">
-                    CERTIFICATE OF MERIT &amp; EXCELLENCE
-                  </p>
-                </div>
-
-                {/* Recipient & Reason */}
-                <div className="relative z-10 text-center my-6 space-y-3">
-                  <p className="text-xs sm:text-sm font-sans text-slate-300 italic">
-                    This is proudly presented to
-                  </p>
-                  <div className="text-2xl sm:text-3xl md:text-4xl font-serif font-black text-amber-400 tracking-wide underline decoration-amber-500/40 decoration-wavy underline-offset-8">
-                    {portfolioData.profile.name}
-                  </div>
-                  <p className="text-xs sm:text-sm text-slate-300 max-w-xl mx-auto pt-2 font-sans leading-relaxed">
-                    in formal recognition of outstanding distinction and technical leadership for{' '}
-                    <span className="font-bold text-slate-100">{title}</span>.
-                  </p>
-                </div>
-
-                {/* Footer Signatories & Gold Seal */}
-                <div className="relative z-10 pt-6 border-t border-amber-500/20 grid grid-cols-1 sm:grid-cols-3 gap-6 items-end text-center">
-                  <div className="text-left space-y-1">
-                    <p className="font-mono text-xs font-bold text-slate-200">{certificate.signatory1}</p>
-                    <p className="text-[10px] font-mono text-slate-500">Authorized Evaluator</p>
-                  </div>
-
-                  {/* Gold Seal */}
-                  <div className="flex flex-col items-center justify-center">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-600 via-yellow-400 to-amber-300 p-0.5 shadow-lg flex items-center justify-center">
-                      <div className="w-full h-full rounded-full bg-slate-950 flex flex-col items-center justify-center p-1 text-center border border-amber-400/50">
-                        <Award className="w-5 h-5 text-amber-400 mb-0.5" />
-                        <span className="text-[8px] font-mono font-black text-amber-300 uppercase leading-none">
-                          OFFICIAL
-                        </span>
-                      </div>
-                    </div>
-                    <span className="text-[9px] font-mono text-amber-400/80 font-bold uppercase tracking-wider mt-1">
-                      {certificate.goldSealText || 'SEAL OF EXCELLENCE'}
-                    </span>
-                  </div>
-
-                  <div className="text-right space-y-1">
-                    <p className="font-mono text-xs font-bold text-slate-200">{certificate.signatory2}</p>
-                    <p className="text-[10px] font-mono text-slate-500">Organizing Convener</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Certificate Verification Details Bar */}
-              <div className="p-4 rounded-2xl bg-slate-900/60 border border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-                <div className="flex items-center gap-3">
-                  <FileCheck className="w-4 h-4 text-emerald-400" />
-                  <div>
-                    <span className="text-slate-400 block text-[10px]">CREDENTIAL ID</span>
-                    <span className="text-slate-200 font-bold tracking-wider">{certificate.credentialId}</span>
-                  </div>
-                  <button
-                    onClick={handleCopyId}
-                    className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
-                    title="Copy Credential ID"
-                    type="button"
-                  >
-                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-4 text-slate-400 text-[11px]">
-                  <span>Issued: <strong className="text-slate-200">{certificate.issueDate}</strong></span>
-                  <button
-                    onClick={handlePrint}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors cursor-pointer"
-                    type="button"
-                  >
-                    <Printer className="w-3.5 h-3.5" />
-                    <span>Print</span>
-                  </button>
-                  {certificate.verificationUrl && (
-                    <a
-                      href={safeHref(certificate.verificationUrl)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 font-bold transition-all"
-                    >
-                      <span>Verify</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
 
           {/* Photos Tab (2-3 images for this achievement) */}
           {activeTab === 'photos' && (
             <div className="space-y-6">
-              {/* Main Photo Viewer */}
-              <div className="relative rounded-2xl overflow-hidden border border-white/10 aspect-video bg-black/40 flex items-center justify-center group">
+              {/* Main Photo Viewer: Completely Uncropped with object-contain */}
+              <div className="relative rounded-2xl overflow-hidden border border-white/10 min-h-[300px] h-[50vh] sm:h-[62vh] bg-slate-950/95 flex items-center justify-center group p-2 sm:p-4 shadow-inner">
                 <img
                   loading="lazy"
                   decoding="async"
                   src={safeImageSrc(images[activePhotoIdx] || images[0])}
                   alt={`${title} proof photo ${activePhotoIdx + 1}`}
-                  className="w-full h-full object-cover"
+                  className="max-h-full max-w-full w-auto h-auto object-contain rounded-xl select-none shadow-2xl transition-all"
                 />
 
-                {/* Photo Counter Pill */}
-                <div className="absolute top-4 right-4 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/20 text-white text-xs font-mono font-bold">
-                  Photo {activePhotoIdx + 1} of {images.length}
+                {/* Top overlay controls */}
+                <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+                  <span className="px-3 py-1 rounded-full bg-black/75 backdrop-blur-md border border-white/20 text-white text-xs font-mono font-bold">
+                    Photo {activePhotoIdx + 1} of {images.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setIsFullscreenPhoto(true)}
+                    className="p-1.5 rounded-full bg-black/75 hover:bg-black text-white backdrop-blur-md border border-white/20 transition-all cursor-pointer shadow-md"
+                    title="View Full Screen (Zero Cropping)"
+                  >
+                    <Maximize2 className="w-4 h-4 text-amber-400" />
+                  </button>
                 </div>
 
                 {/* Left/Right Navigation Arrows if > 1 photo */}
@@ -368,7 +312,7 @@ function AchievementModal({ achievement, initialTab = 'certificate', onClose }) 
                   <>
                     <button
                       onClick={() => setActivePhotoIdx((prev) => (prev > 0 ? prev - 1 : images.length - 1))}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md border border-white/20 transition-all cursor-pointer opacity-90 hover:opacity-100"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md border border-white/20 transition-all cursor-pointer opacity-90 hover:opacity-100 z-10"
                       aria-label="Previous photo"
                       type="button"
                     >
@@ -376,7 +320,7 @@ function AchievementModal({ achievement, initialTab = 'certificate', onClose }) 
                     </button>
                     <button
                       onClick={() => setActivePhotoIdx((prev) => (prev < images.length - 1 ? prev + 1 : 0))}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md border border-white/20 transition-all cursor-pointer opacity-90 hover:opacity-100"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur-md border border-white/20 transition-all cursor-pointer opacity-90 hover:opacity-100 z-10"
                       aria-label="Next photo"
                       type="button"
                     >
@@ -392,63 +336,124 @@ function AchievementModal({ achievement, initialTab = 'certificate', onClose }) 
                   <button
                     key={idx}
                     onClick={() => setActivePhotoIdx(idx)}
-                    className={`relative rounded-xl overflow-hidden border-2 aspect-video transition-all cursor-pointer ${
+                    className={`relative rounded-xl overflow-hidden border-2 h-20 sm:h-24 transition-all cursor-pointer bg-slate-950 p-1 flex items-center justify-center ${
                       activePhotoIdx === idx
                         ? 'border-amber-500 scale-[1.02] shadow-lg shadow-amber-500/20'
                         : 'border-white/10 hover:border-white/30 opacity-70 hover:opacity-100'
                     }`}
                     type="button"
                   >
-                    <img loading="lazy" decoding="async" width={48} height={48} src={safeImageSrc(img)} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                    <img loading="lazy" decoding="async" src={safeImageSrc(img)} alt={`Thumbnail ${idx + 1}`} className="max-h-full max-w-full w-auto h-auto object-contain" />
                     <span className="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-black/80 text-[10px] font-mono text-white">
                       #{idx + 1}
                     </span>
                   </button>
                 ))}
               </div>
+
+              {/* Fullscreen Lightbox Portal */}
+              {isFullscreenPhoto && typeof document !== 'undefined' && createPortal(
+                <div
+                  onClick={(e) => {
+                    if (e.target === e.currentTarget) setIsFullscreenPhoto(false);
+                  }}
+                  className="fixed inset-0 z-[9990] bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
+                >
+                  <div className="relative max-w-[98vw] max-h-[96vh] flex flex-col items-center">
+                    <div className="w-full flex items-center justify-between pb-3 px-1 text-white">
+                      <span className="text-xs font-mono text-amber-400 font-bold">
+                        {title} • Photo {activePhotoIdx + 1} of {images.length}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsFullscreenPhoto(false)}
+                        className="p-1.5 rounded-xl bg-slate-800 hover:bg-rose-900 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                        title="Close full screen"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    <div className="relative rounded-2xl border border-white/10 bg-slate-950/90 p-2 sm:p-4 overflow-hidden shadow-2xl flex items-center justify-center max-h-[86vh]">
+                      <img
+                        src={safeImageSrc(images[activePhotoIdx] || images[0])}
+                        alt={`${title} proof full`}
+                        className="max-h-[82vh] max-w-[94vw] w-auto h-auto object-contain rounded-xl select-none"
+                      />
+                      {images.length > 1 && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActivePhotoIdx((prev) => (prev > 0 ? prev - 1 : images.length - 1));
+                            }}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/70 hover:bg-black/90 text-white backdrop-blur-md border border-white/20 transition-all cursor-pointer opacity-90 hover:opacity-100 z-10"
+                            aria-label="Previous photo"
+                            type="button"
+                          >
+                            <ChevronLeft className="w-6 h-6" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActivePhotoIdx((prev) => (prev < images.length - 1 ? prev + 1 : 0));
+                            }}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/70 hover:bg-black/90 text-white backdrop-blur-md border border-white/20 transition-all cursor-pointer opacity-90 hover:opacity-100 z-10"
+                            aria-label="Next photo"
+                            type="button"
+                          >
+                            <ChevronRight className="w-6 h-6" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>,
+                document.body
+              )}
             </div>
           )}
 
           {activeTab === 'overview' && (
             <div className="space-y-6">
               {/* Category & Issuer Info */}
-              <div className="p-4 rounded-2xl bg-slate-900/50 border border-white/10 flex flex-wrap items-center justify-between gap-3">
+              <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <span className="text-[10px] font-mono uppercase text-slate-400 block">CATEGORY</span>
-                  <span className="text-sm font-sans font-bold text-slate-100">{category}</span>
+                  <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 block">CATEGORY</span>
+                  <span className="text-sm font-sans font-bold text-slate-900 dark:text-slate-100">{category}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] font-mono uppercase text-slate-400 block">AWARDING AUTHORITY</span>
-                  <span className="text-sm font-sans font-bold text-amber-300">{issuer}</span>
+                  <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 block">AWARDING AUTHORITY</span>
+                  <span className="text-sm font-sans font-bold text-amber-700 dark:text-amber-300">{issuer}</span>
                 </div>
                 <div>
-                  <span className="text-[10px] font-mono uppercase text-slate-400 block">YEAR / CYCLE</span>
-                  <span className="text-sm font-sans font-bold text-slate-200">{year}</span>
+                  <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400 block">YEAR / CYCLE</span>
+                  <span className="text-sm font-sans font-bold text-slate-800 dark:text-slate-200">{year}</span>
                 </div>
               </div>
 
               {/* Detailed Description */}
               <div className="space-y-3">
-                <h4 className="text-base font-bold text-slate-100 font-sans flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-amber-400" />
+                <h4 className="text-base font-bold text-slate-900 dark:text-slate-100 font-sans flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                   Engineering Context &amp; Solution
                 </h4>
-                <p className="text-sm text-slate-300 leading-relaxed font-sans">
+                <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed font-sans">
                   {detailedDescription}
                 </p>
               </div>
 
               {/* Key Highlights Bullet points */}
-              {keyHighlights.length > 0 && (
+              {resolvedHighlights.length > 0 && (
                 <div className="space-y-3">
-                  <h4 className="text-base font-bold text-slate-100 font-sans flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <h4 className="text-base font-bold text-slate-900 dark:text-slate-100 font-sans flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     Key Milestones &amp; Impact
                   </h4>
                   <ul className="space-y-2">
-                    {keyHighlights.map((pt, idx) => (
-                      <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-300 font-sans">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-2 shrink-0 shadow-sm" />
+                    {resolvedHighlights.map((pt, idx) => (
+                      <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300 font-sans">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 dark:bg-amber-400 mt-2 shrink-0 shadow-sm" />
                         <span>{pt}</span>
                       </li>
                     ))}
@@ -457,17 +462,17 @@ function AchievementModal({ achievement, initialTab = 'certificate', onClose }) 
               )}
 
               {/* Skills Tags */}
-              {skills.length > 0 && (
+              {resolvedSkills.length > 0 && (
                 <div className="space-y-3">
-                  <h4 className="text-base font-bold text-slate-100 font-sans flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-sky-400" />
+                  <h4 className="text-base font-bold text-slate-900 dark:text-slate-100 font-sans flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                     Demonstrated Competencies
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {skills.map((skill, idx) => (
+                    {resolvedSkills.map((skill, idx) => (
                       <span
                         key={idx}
-                        className="px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-slate-900/70 border border-white/10 text-slate-200"
+                        className="px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-slate-100 dark:bg-slate-900/70 border border-slate-200 dark:border-white/10 text-slate-800 dark:text-slate-200"
                       >
                         {skill}
                       </span>
@@ -497,7 +502,7 @@ function getAchSkillTheme(idx) {
 }
 
 // Individual Achievement Card with Multi-Image Slider & Carousel
-function AchievementCard({ achievement, onSelect, onSelectPhotos }) {
+function AchievementCard({ achievement, onSelectPhotos, onSelectOverview }) {
   const [photoIndex, setPhotoIndex] = useState(0);
   const images = achievement.images || ['/images/workspace.webp'];
   const theme = getAchievementTheme(achievement);
@@ -519,7 +524,7 @@ function AchievementCard({ achievement, onSelect, onSelectPhotos }) {
       viewport={{ once: true }}
       transition={{ duration: 0.55 }}
       whileHover={{ y: -6 }}
-      onClick={() => onSelect(achievement)}
+      onClick={() => onSelectOverview(achievement)}
       className="p-5 rounded-3xl border flex flex-col justify-between gap-5 glass-card shimmer glow-border transition-all duration-300 cursor-pointer group select-none relative overflow-hidden shadow-md"
       style={{
         background: `linear-gradient(145deg, var(--theme-card) 0%, ${theme.accent}0c 100%)`,
@@ -550,7 +555,14 @@ function AchievementCard({ achievement, onSelect, onSelectPhotos }) {
 
       <div>
         {/* Top Image Preview with Multi-Image Controls */}
-        <div className="relative rounded-2xl overflow-hidden aspect-[16/10] mb-4 bg-slate-950 border border-white/10 group/img">
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelectPhotos(achievement);
+          }}
+          title="Click to view full photo gallery"
+          className="relative rounded-2xl overflow-hidden aspect-[16/10] mb-4 bg-slate-950 border border-white/10 group/img cursor-pointer"
+        >
           <img
             loading="lazy"
             decoding="async"
@@ -628,43 +640,48 @@ function AchievementCard({ achievement, onSelect, onSelectPhotos }) {
           {achievement.desc}
         </p>
 
-        {/* Key Highlight Pill with High-Contrast Text */}
-        {achievement.keyHighlights && achievement.keyHighlights.length > 0 && (
-          <div
-            className="mt-3.5 p-2.5 rounded-xl border text-xs font-mono flex items-center gap-2 shadow-xs"
-            style={{
-              background: `linear-gradient(135deg, ${theme.accent}14, ${theme.accent}05)`,
-              borderColor: `${theme.accent}38`,
-            }}
-          >
-            <Sparkles className="w-3.5 h-3.5 shrink-0" style={{ color: theme.accent }} />
-            <span className="truncate font-bold text-slate-800 dark:text-slate-100">{achievement.keyHighlights[0]}</span>
-          </div>
-        )}
+        {/* Key Highlight Pill with High-Contrast Text - Always guaranteed on every card */}
+        <div
+          className="mt-3.5 p-2.5 rounded-xl border text-xs font-mono flex items-center gap-2 shadow-xs"
+          style={{
+            background: `linear-gradient(135deg, ${theme.accent}14, ${theme.accent}05)`,
+            borderColor: `${theme.accent}38`,
+          }}
+        >
+          <Sparkles className="w-3.5 h-3.5 shrink-0" style={{ color: theme.accent }} />
+          <span className="truncate font-bold text-slate-800 dark:text-slate-100">
+            {getFallbackHighlight(achievement)}
+          </span>
+        </div>
 
-        {/* Domain-Colored Skills Chips on Card */}
-        {achievement.skills && achievement.skills.length > 0 && (
-          <div className="flex flex-wrap gap-1.5 mt-3 pt-2.5 border-t border-slate-200/50 dark:border-white/5">
-            {achievement.skills.slice(0, 4).map((skill, sIdx) => {
-              const sTheme = getAchSkillTheme(sIdx);
-              return (
-                <span
-                  key={skill}
-                  className="px-2.5 py-0.5 rounded-lg text-[11px] font-mono font-semibold shadow-2xs cursor-default"
-                  style={{
-                    background: sTheme.bg,
-                    borderColor: sTheme.border,
-                    borderWidth: '1px',
-                    borderStyle: 'solid',
-                    color: sTheme.color,
-                  }}
-                >
-                  {skill}
-                </span>
-              );
-            })}
-          </div>
-        )}
+        {/* Domain-Colored Skills Chips on Card - Always guaranteed on every card */}
+        {(() => {
+          const cardSkills = (achievement.skills && achievement.skills.length > 0)
+            ? achievement.skills
+            : getFallbackSkills(achievement);
+          return (
+            <div className="flex flex-wrap gap-1.5 mt-3 pt-2.5 border-t border-slate-200/50 dark:border-white/5">
+              {cardSkills.slice(0, 4).map((skill, sIdx) => {
+                const sTheme = getAchSkillTheme(sIdx);
+                return (
+                  <span
+                    key={skill}
+                    className="px-2.5 py-0.5 rounded-lg text-[11px] font-mono font-semibold shadow-2xs cursor-default"
+                    style={{
+                      background: sTheme.bg,
+                      borderColor: sTheme.border,
+                      borderWidth: '1px',
+                      borderStyle: 'solid',
+                      color: sTheme.color,
+                    }}
+                  >
+                    {skill}
+                  </span>
+                );
+              })}
+            </div>
+          );
+        })()}
       </div>
 
       {/* Action Footer */}
@@ -691,17 +708,16 @@ function AchievementCard({ achievement, onSelect, onSelectPhotos }) {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onSelect(achievement);
+            onSelectOverview(achievement);
           }}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold transition-all shadow-xs hover:scale-105 cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl font-bold transition-all shadow-xs hover:scale-105 cursor-pointer text-slate-950"
           style={{
             background: `linear-gradient(135deg, ${theme.accent}, #f59e0b)`,
-            color: '#0f172a',
           }}
           type="button"
         >
-          <Award className="w-3.5 h-3.5" />
-          <span>Certificate</span>
+          <Zap className="w-3.5 h-3.5" />
+          <span>Case Study</span>
           <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
         </button>
       </div>
@@ -716,16 +732,16 @@ export default function Achievements() {
   const { data } = usePortfolioData();
   const achievements = data?.achievements && data.achievements.length > 0 ? data.achievements : portfolioData.achievements || [];
   const [selectedAchievement, setSelectedAchievement] = useState(null);
-  const [modalTab, setModalTab] = useState('certificate');
-
-  const handleOpenCertificate = (ach) => {
-    setSelectedAchievement(ach);
-    setModalTab('certificate');
-  };
+  const [modalTab, setModalTab] = useState('photos');
 
   const handleOpenPhotos = (ach) => {
     setSelectedAchievement(ach);
     setModalTab('photos');
+  };
+
+  const handleOpenOverview = (ach) => {
+    setSelectedAchievement(ach);
+    setModalTab('overview');
   };
 
   return (
@@ -740,11 +756,11 @@ export default function Achievements() {
       >
         <div className="flex items-center justify-between flex-wrap gap-4">
           <div>
-            <span className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-amber-400 uppercase mb-3">
+            <span className="inline-flex items-center gap-2 text-xs font-mono font-bold tracking-widest text-amber-500 dark:text-amber-400 uppercase mb-3">
               <Trophy className="w-3.5 h-3.5" />
               Honors &amp; Recognitions
             </span>
-            <h2 className="text-4xl md:text-6xl font-serif font-black tracking-tight text-slate-100 mt-1">
+            <h2 className="text-4xl md:text-6xl font-serif font-black tracking-tight text-slate-900 dark:text-slate-100 mt-1">
               Major{' '}
               <span
                 style={{
@@ -757,14 +773,14 @@ export default function Achievements() {
                 Achievements
               </span>
             </h2>
-            <p className="text-slate-400 text-sm md:text-base mt-3 max-w-2xl leading-relaxed">
-              National hackathon podium finishes, 1st prize innovation prototypes, and space-tech citations. Each achievement includes verified credentials and multi-image photo proof.
+            <p className="text-slate-600 dark:text-slate-400 text-sm md:text-base mt-3 max-w-2xl leading-relaxed">
+              National hackathon podium finishes, 1st prize innovation prototypes, and space-tech citations. In-depth engineering case studies and verified multi-image event proof.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-xs">
-            <Sparkles className="w-4 h-4" />
-            <span>Interactive Multi-Image Proof</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 font-mono text-xs">
+            <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <span>Interactive Photos &amp; Case Studies</span>
           </div>
         </div>
       </motion.div>
@@ -775,8 +791,8 @@ export default function Achievements() {
           <AchievementCard
             key={ach.id}
             achievement={ach}
-            onSelect={handleOpenCertificate}
             onSelectPhotos={handleOpenPhotos}
+            onSelectOverview={handleOpenOverview}
           />
         ))}
       </div>

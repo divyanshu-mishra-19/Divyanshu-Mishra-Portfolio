@@ -31,6 +31,7 @@ import {
   Camera,
   MessageSquare,
   ShieldCheck,
+  FileCheck,
   Lock
 } from 'lucide-react';
 import { portfolioData } from '../data/portfolioData';
@@ -50,6 +51,7 @@ export default function Sidebar({
   const profile = data?.profile || portfolioData.profile;
   const projectsList = data?.projects && data.projects.length > 0 ? data.projects : portfolioData.projects;
   const achievementsList = data?.achievements && data.achievements.length > 0 ? data.achievements : portfolioData.achievements;
+  const certificationsList = data?.certifications && data.certifications.length > 0 ? data.certifications : portfolioData.certifications || [];
   const blogList = data?.blog && data.blog.length > 0 ? data.blog : portfolioData.blog;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hoveredRailItem, setHoveredRailItem] = useState(null);
@@ -58,6 +60,7 @@ export default function Sidebar({
     skills: true,
     projects: true,
     achievements: true,
+    certifications: true,
     leadership: true,
     behindTheCode: true,
     blog: true
@@ -81,26 +84,31 @@ export default function Sidebar({
   };
 
   const getItemIcon = (fileName) => {
-    if (fileName.endsWith('.jsx')) return <FileCode className="w-4 h-4 text-sky-400 shrink-0" />;
-    if (fileName.endsWith('.py')) return <Code2 className="w-4 h-4 text-emerald-400 shrink-0" />;
-    if (fileName.endsWith('.js')) return <FileCode className="w-4 h-4 text-yellow-400 shrink-0" />;
-    if (fileName.endsWith('.cpp')) return <Code2 className="w-4 h-4 text-emerald-400 shrink-0" />;
-    if (fileName.endsWith('.json')) {
-      if (fileName.includes('gallery')) return <ImageIcon className="w-4 h-4 text-amber-400 shrink-0" />;
+    if (!fileName || typeof fileName !== 'string') return <FileText className="w-4 h-4 text-slate-400 shrink-0" />;
+    const lower = fileName.toLowerCase();
+    if (lower.endsWith('.jsx')) return <FileCode className="w-4 h-4 text-sky-400 shrink-0" />;
+    if (lower.endsWith('.py')) return <Code2 className="w-4 h-4 text-emerald-400 shrink-0" />;
+    if (lower.endsWith('.js')) return <FileCode className="w-4 h-4 text-yellow-400 shrink-0" />;
+    if (lower.endsWith('.cpp')) return <Code2 className="w-4 h-4 text-emerald-400 shrink-0" />;
+    if (lower.endsWith('.json')) {
+      if (lower.includes('gallery')) return <ImageIcon className="w-4 h-4 text-amber-400 shrink-0" />;
       return <FileCode className="w-4 h-4 text-orange-400 shrink-0" />;
     }
-    if (fileName.endsWith('.md')) {
-      if (fileName.includes('hackathon') || fileName.includes('ideathon') || fileName.includes('talent')) {
+    if (lower.endsWith('.md')) {
+      if (lower.includes('hackathon') || lower.includes('ideathon') || lower.includes('talent')) {
         return <Trophy className="w-4 h-4 text-amber-400 shrink-0" />;
       }
-      if (fileName.includes('education')) {
+      if (lower.includes('education')) {
         return <GraduationCap className="w-4 h-4 text-sky-400 shrink-0" />;
       }
       return <FileText className="w-4 h-4 text-amber-300 shrink-0" />;
     }
-    if (fileName.endsWith('.spotify')) return <Music className="w-4 h-4 text-emerald-400 shrink-0" />;
-    if (fileName.endsWith('.log')) return <Activity className="w-4 h-4 text-emerald-400 shrink-0" />;
-    if (fileName.endsWith('.db')) return <Users className="w-4 h-4 text-sky-400 shrink-0" />;
+    if (lower.endsWith('.cert') || lower.includes('certif')) {
+      return <FileCheck className="w-4 h-4 text-emerald-400 shrink-0" />;
+    }
+    if (lower.endsWith('.spotify')) return <Music className="w-4 h-4 text-emerald-400 shrink-0" />;
+    if (lower.endsWith('.log')) return <Activity className="w-4 h-4 text-emerald-400 shrink-0" />;
+    if (lower.endsWith('.db')) return <Users className="w-4 h-4 text-sky-400 shrink-0" />;
     return <FileText className="w-4 h-4 text-slate-400 shrink-0" />;
   };
 
@@ -180,18 +188,20 @@ export default function Sidebar({
   return (
     <>
       {/* Mobile Menu Toggle Button */}
-      <button
-        onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2.5 rounded-xl border shadow-xl backdrop-blur-md transition-all cursor-pointer"
-        style={{
-          background: 'var(--theme-sidebar-bg, rgba(13,17,23,0.95))',
-          borderColor: 'var(--theme-sidebar-border, rgba(255,255,255,0.15))',
-          color: 'var(--theme-text, #f1f5f9)'
-        }}
-        aria-label="Toggle Navigation Menu"
-      >
-        {mobileOpen ? <X className="w-5 h-5 text-rose-400" /> : <Menu className="w-5 h-5 text-sky-400" />}
-      </button>
+      {!mobileOpen && (
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="lg:hidden fixed top-4 left-4 z-50 p-2.5 rounded-xl border shadow-xl backdrop-blur-md transition-all cursor-pointer animate-in fade-in"
+          style={{
+            background: 'var(--theme-sidebar-bg, rgba(13,17,23,0.95))',
+            borderColor: 'var(--theme-sidebar-border, rgba(255,255,255,0.15))',
+            color: 'var(--theme-text, #f1f5f9)'
+          }}
+          aria-label="Open Navigation Menu"
+        >
+          <Menu className="w-5 h-5 text-sky-400" />
+        </button>
+      )}
 
       {/* Mobile Backdrop */}
       <AnimatePresence>
@@ -263,6 +273,7 @@ export default function Sidebar({
               <RailItem sectionId="skills" label="Technical Skills" icon={Code2} activeColor="#38bdf8" />
               <RailItem sectionId="projects" label={`Projects (${projectsList.length})`} icon={Layers} activeColor="#f59e0b" />
               <RailItem sectionId="achievements" label={`Achievements (${achievementsList.length})`} icon={Trophy} activeColor="#eab308" />
+              <RailItem sectionId="certifications" label={`Certifications (${certificationsList.length})`} icon={FileCheck} activeColor="#10b981" />
               <RailItem sectionId="responsibility" label="Positions of Responsibility" icon={Briefcase} activeColor="#f59e0b" />
               <RailItem sectionId="education" label="Education & Coursework" icon={GraduationCap} activeColor="#38bdf8" />
               <RailItem sectionId="behind-the-code" label="Behind The Code" icon={Music} activeColor="#34d399" />
@@ -348,6 +359,16 @@ export default function Sidebar({
                   </span>
                 </div>
               </div>
+
+              {/* Close Button on Mobile (inside header) */}
+              <button
+                type="button"
+                onClick={() => setMobileOpen(false)}
+                className="lg:hidden p-2 rounded-xl border border-white/10 hover:border-rose-500/40 text-slate-400 hover:text-rose-400 hover:bg-white/5 transition-all cursor-pointer shrink-0"
+                aria-label="Close navigation menu"
+              >
+                <X className="w-5 h-5" />
+              </button>
 
               {/* Collapse Button (Desktop Only) */}
               <button
@@ -452,7 +473,7 @@ export default function Sidebar({
                           <NavItem
                             key={proj.id}
                             sectionId="projects"
-                            fileName={proj.file}
+                            fileName={proj.file || `${proj.id || 'project'}.py`}
                             activeColor="#f59e0b"
                             extraId={proj.id}
                             activeCheck={() => isActive}
@@ -490,10 +511,52 @@ export default function Sidebar({
                         <NavItem
                           key={ach.id}
                           sectionId="achievements"
-                          fileName={ach.file}
+                          fileName={ach.file || `${ach.id || 'achievement'}.md`}
                           activeColor="#f59e0b"
                         />
                       ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+              {/* Folder: certifications (Dedicated Licenses & Certifications Section) */}
+              <div>
+                <button
+                  onClick={() => toggleFolder('certifications')}
+                  className="w-full flex items-center gap-2 px-3 py-1.5 text-slate-400 hover:text-slate-100 hover:bg-white/5 rounded-lg transition-colors text-[12px] cursor-pointer"
+                  type="button"
+                >
+                  {expandedFolders.certifications ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+                  {expandedFolders.certifications ? <FolderOpen className="w-4 h-4 text-emerald-400" /> : <Folder className="w-4 h-4 text-emerald-400" />}
+                  <span className="font-semibold text-slate-300">certifications</span>
+                  <span className="text-[10px] text-emerald-400 font-mono ml-auto">({certificationsList.length})</span>
+                </button>
+                <AnimatePresence>
+                  {expandedFolders.certifications && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="ml-4 border-l border-white/10 pl-2 space-y-0.5 mt-0.5 overflow-hidden"
+                    >
+                      <NavItem sectionId="certifications" fileName="all-certifications.md" activeColor="#10b981" />
+                      {certificationsList.map((cert, cIdx) => {
+                        const baseName = (cert.name || `cert-${cIdx}`)
+                          .toLowerCase()
+                          .replace(/[^a-z0-9]+/g, '-')
+                          .replace(/^-|-$/g, '')
+                          .slice(0, 18);
+                        return (
+                          <NavItem
+                            key={cert.id || cIdx}
+                            sectionId="certifications"
+                            fileName={`${baseName}.cert`}
+                            activeColor="#10b981"
+                          />
+                        );
+                      })}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -528,7 +591,7 @@ export default function Sidebar({
                       transition={{ duration: 0.2 }}
                       className="ml-4 border-l border-white/10 pl-2 space-y-0.5 mt-0.5 overflow-hidden"
                     >
-                      <NavItem sectionId="behind-the-code" fileName={portfolioData.audio.file} activeColor="#34d399" />
+                      <NavItem sectionId="behind-the-code" fileName={portfolioData?.audio?.file || 'focus-audio.spotify'} activeColor="#34d399" />
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -563,7 +626,7 @@ export default function Sidebar({
                           <NavItem
                             key={article.id}
                             sectionId="blog"
-                            fileName={article.file}
+                            fileName={article.file || `${article.id || 'post'}.md`}
                             activeColor="#c084fc"
                             extraId={article.id}
                             activeCheck={() => isActive}

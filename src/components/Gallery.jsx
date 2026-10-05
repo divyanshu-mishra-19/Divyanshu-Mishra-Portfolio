@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import {
   Maximize2,
+  Minimize2,
   X,
   Calendar,
   MapPin,
@@ -401,9 +402,10 @@ function GalleryCard({ item, onOpenModal }) {
 function GalleryLightboxModal({ item, activeIdx, setActiveIdx, onClose }) {
   const images = item.images && item.images.length > 0 ? item.images : [item.image || '/images/workspace.webp'];
   const captions = item.captions || [];
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   return createPortal(
-    <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-6 overflow-y-auto">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -419,11 +421,11 @@ function GalleryLightboxModal({ item, activeIdx, setActiveIdx, onClose }) {
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 15 }}
         transition={{ duration: 0.25 }}
-        className="relative w-full max-w-4xl rounded-3xl border border-white/10 shadow-2xl glass-card overflow-hidden z-10 my-auto flex flex-col"
+        className={`relative w-full ${isFullscreen ? 'max-w-[98vw] h-[96vh]' : 'max-w-4xl max-h-[92vh]'} rounded-3xl border border-white/10 shadow-2xl glass-card overflow-hidden z-10 my-auto flex flex-col transition-all duration-300`}
         style={{ background: 'var(--theme-card-solid, #0f172a)' }}
       >
         {/* Top Header */}
-        <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between gap-3 bg-slate-900/40">
+        <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between gap-3 bg-slate-900/40 shrink-0">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
@@ -436,25 +438,36 @@ function GalleryLightboxModal({ item, activeIdx, setActiveIdx, onClose }) {
             </h3>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl bg-slate-950/70 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer border border-white/10"
-            aria-label="Close Lightbox"
-            title="Close Lightbox"
-            type="button"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              className="p-2 rounded-xl bg-slate-950/70 hover:bg-white/10 text-slate-300 hover:text-white transition-colors cursor-pointer border border-white/10"
+              aria-label={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+              title={isFullscreen ? 'Exit Fullscreen' : 'Toggle Fullscreen (Zero Cropping)'}
+              type="button"
+            >
+              {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+            </button>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl bg-slate-950/70 hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer border border-white/10"
+              aria-label="Close Lightbox"
+              title="Close Lightbox"
+              type="button"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
-        {/* Main Photo Display with Navigation Arrows */}
-        <div className="relative aspect-video sm:aspect-[16/9] bg-black/60 flex items-center justify-center overflow-hidden">
+        {/* Main Photo Display with Navigation Arrows: Completely Uncropped */}
+        <div className={`relative ${isFullscreen ? 'h-[75vh]' : 'min-h-[300px] h-[52vh] sm:h-[65vh]'} bg-black/90 flex items-center justify-center overflow-hidden p-2 sm:p-4 select-none`}>
           <img
             loading="lazy"
             decoding="async"
             src={safeImageSrc(images[activeIdx])}
             alt={captions[activeIdx] || item.title}
-            className="max-h-full max-w-full object-contain"
+            className="max-h-full max-w-full w-auto h-auto object-contain rounded-xl shadow-2xl transition-all"
           />
 
           {/* Left Arrow */}
