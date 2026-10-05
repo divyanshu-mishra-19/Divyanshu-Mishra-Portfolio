@@ -26,7 +26,7 @@ backup/
 scratch/
 
 # Data & Uploads
-data/
+/data/
 uploads/
 *-uploads/
 

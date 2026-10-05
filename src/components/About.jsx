@@ -181,7 +181,7 @@ export default function About({ onNavigate }) {
               className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-700"
             />
             {/* Image overlay gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0d1117]/60 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-[#0d1117]/60 via-transparent to-transparent" />
           </div>
         </motion.div>
       </div>
