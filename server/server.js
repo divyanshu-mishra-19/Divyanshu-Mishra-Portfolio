@@ -491,6 +491,12 @@ const server = http.createServer(async (req, res) => {
     return serveStaticFile(req, res, filePath, safeReqPath);
   }
 
+  // Fallback: check public directory for any static asset
+  const publicFilePath = path.resolve(process.cwd(), 'public', '.' + safeReqPath);
+  if (fs.existsSync(publicFilePath) && fs.statSync(publicFilePath).isFile()) {
+    return serveStaticFile(req, res, publicFilePath, safeReqPath);
+  }
+
   // Unmatched routes return real 404
   return serve404(req, res);
   } catch (err) {
