@@ -8,7 +8,7 @@ export const portfolioData = {
     ],
     "heroSubtitle": "B.Tech EEE '28 @ NIT Nagaland | AI / ML Enthusiast",
     "avatar": "/images/avatar-f84ff6e6.webp",
-    "workspaceIllustration": "/uploads/39db4f23-ed42-4e4a-bf70-f4c1b5e0a579.jpg",
+    "workspaceIllustration": "/images/39db4f23-ed42-4e4a-bf70-f4c1b5e0a579.jpg",
     "status": "Actively Researching & Building",
     "email": "divyanshu.nit.28@gmail.com",
     "phone": "+91-77******53",
@@ -833,7 +833,7 @@ export const portfolioData = {
       "role": "Lead Organizer & Technical Lead",
       "metric": "200+ Hackers • Regional Hackathon",
       "images": [
-        "/uploads/98ef01b9-9992-49ed-be2d-63631706d33f.jpg"
+        "/images/98ef01b9-9992-49ed-be2d-63631706d33f.jpg"
       ],
       "captions": [
         "Hackdays Nagaland & Hack $ Brahma"
@@ -851,10 +851,10 @@ export const portfolioData = {
       "role": "Technical Secretary / Co-Organizer",
       "metric": "200+ Participants • 15+ Events",
       "images": [
-        "/uploads/37fc0892-31db-44be-9f77-a8edb658bea2.jpg",
-        "/uploads/c420a416-ef55-44e4-8544-27d83dda4cd0.jpg",
-        "/uploads/17a1e73a-0ca3-48dd-817f-8b5ed290d0d6.jpg",
-        "/uploads/c529bfb7-f2db-4a88-8dc4-b5007f269df8.jpg"
+        "/images/37fc0892-31db-44be-9f77-a8edb658bea2.jpg",
+        "/images/c420a416-ef55-44e4-8544-27d83dda4cd0.jpg",
+        "/images/17a1e73a-0ca3-48dd-817f-8b5ed290d0d6.jpg",
+        "/images/c529bfb7-f2db-4a88-8dc4-b5007f269df8.jpg"
       ],
       "captions": [
         "Tech Avinya — NIT Nagaland 1st Tech Fest",
@@ -875,8 +875,8 @@ export const portfolioData = {
       "role": "Lead Architect",
       "metric": "Top 5 Finalist • 26 Teams",
       "images": [
-        "/uploads/1eb07fd7-6808-492e-a10e-5aa074a2facb.jpg",
-        "/uploads/6538346d-a2da-43d4-8986-1f4c82eb3cd2.jpg"
+        "/images/1eb07fd7-6808-492e-a10e-5aa074a2facb.jpg",
+        "/images/6538346d-a2da-43d4-8986-1f4c82eb3cd2.jpg"
       ],
       "captions": [
         "Capabl Agentic AI Saksham National Finals",
@@ -895,8 +895,8 @@ export const portfolioData = {
       "role": "1st Prize Winner",
       "metric": "First Prize Winner",
       "images": [
-        "/uploads/793c6022-8193-45cd-9e9e-c3ff9a75871f.jpg",
-        "/uploads/4c5ff281-5fe7-4499-adfa-270829fcc539.jpg"
+        "/images/793c6022-8193-45cd-9e9e-c3ff9a75871f.jpg",
+        "/images/4c5ff281-5fe7-4499-adfa-270829fcc539.jpg"
       ],
       "captions": [
         "National Entrepreneurship Ideathon 1st Prize",
@@ -915,14 +915,14 @@ export const portfolioData = {
       "role": "Student Coordinator",
       "metric": "250+ Educators • 5 Days",
       "images": [
-        "/uploads/24774d2e-e69f-407e-8aa0-6fd7433d2213.jpg",
-        "/uploads/2ec8f477-7693-4ac3-b0f6-8c51d06b1c6e.jpg",
-        "/uploads/c8eadef1-b1d9-4821-a4e2-534e3aaa14e4.jpg",
-        "/uploads/5a813a69-159c-4999-940a-fd6fca45d0bb.jpg",
-        "/uploads/1056f3d4-7495-438c-abab-e29211c4e32f.jpg",
-        "/uploads/f2f1b797-8ae3-4e40-af0b-ff060a9e1ff3.jpg",
-        "/uploads/bad84fdb-d53f-48d0-a5e4-25a16a4f94bf.png",
-        "/uploads/395b9596-3750-4ee5-8c3f-d5a2a5db06c0.jpg"
+        "/images/24774d2e-e69f-407e-8aa0-6fd7433d2213.jpg",
+        "/images/2ec8f477-7693-4ac3-b0f6-8c51d06b1c6e.jpg",
+        "/images/c8eadef1-b1d9-4821-a4e2-534e3aaa14e4.jpg",
+        "/images/5a813a69-159c-4999-940a-fd6fca45d0bb.jpg",
+        "/images/1056f3d4-7495-438c-abab-e29211c4e32f.jpg",
+        "/images/f2f1b797-8ae3-4e40-af0b-ff060a9e1ff3.jpg",
+        "/images/bad84fdb-d53f-48d0-a5e4-25a16a4f94bf.png",
+        "/images/395b9596-3750-4ee5-8c3f-d5a2a5db06c0.jpg"
       ],
       "captions": [
         "Ministry of Education IDE Bootcamp",
@@ -947,8 +947,8 @@ export const portfolioData = {
       "role": "Operations & Sponsorship Lead",
       "metric": "500+ Attendees • State-Level",
       "images": [
-        "/uploads/4131a6fe-d766-49da-b37a-fa3c92e24fc7.jpg",
-        "/uploads/4d553051-bb02-434d-a0de-736ed9d35f51.jpg"
+        "/images/4131a6fe-d766-49da-b37a-fa3c92e24fc7.jpg",
+        "/images/4d553051-bb02-434d-a0de-736ed9d35f51.jpg"
       ],
       "captions": [
         "Ekarikthin — Nagaland 2nd Largest Cultural Fest",
@@ -1072,7 +1072,7 @@ export const portfolioData = {
     "artist": "Deep Work Engineering Session",
     "file": "playlist.spotify",
     "duration": "3:12",
-    "cover": "/images/workspace.png"
+    "cover": "/images/workspace.webp"
   },
   "contact": {
     "name": "Divyanshu Mishra",

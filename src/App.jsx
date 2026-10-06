@@ -108,7 +108,7 @@ export default function App() {
     };
   }, [isAdminRoute]);
 
-  // IntersectionObserver to sync active section with sidebar while scrolling
+  // Throttled scroll listener to sync active section with sidebar without layout thrashing
   useEffect(() => {
     const sectionIds = [
       'hero', 
@@ -126,15 +126,22 @@ export default function App() {
       'contact'
     ];
     
+    let ticking = false;
     const handleScroll = () => {
-      const scrollPos = window.scrollY + 200;
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollPos = window.scrollY + 200;
 
-      for (let i = sectionIds.length - 1; i >= 0; i--) {
-        const section = document.getElementById(sectionIds[i]);
-        if (section && section.offsetTop <= scrollPos) {
-          setActiveSection(sectionIds[i]);
-          break;
-        }
+          for (let i = sectionIds.length - 1; i >= 0; i--) {
+            const section = document.getElementById(sectionIds[i]);
+            if (section && section.offsetTop <= scrollPos) {
+              setActiveSection((prev) => (prev !== sectionIds[i] ? sectionIds[i] : prev));
+              break;
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 

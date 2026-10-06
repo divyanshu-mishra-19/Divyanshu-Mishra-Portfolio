@@ -632,7 +632,7 @@ export function buildFullPublicData() {
       artist: "Deep Work Engineering Session",
       file: "playlist.spotify",
       duration: "3:12",
-      cover: "/images/workspace.png"
+      cover: "/images/workspace.webp"
     },
     contact: {
       name: profile?.name || 'Divyanshu Mishra',

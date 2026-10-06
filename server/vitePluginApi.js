@@ -49,71 +49,45 @@ export function viteApiPlugin() {
             return res.end('Forbidden');
           }
 
-          const mediaRow = db.prepare('SELECT id, filename, original_name FROM media_files WHERE filename = ?').get(decodedSubPath);
-          if (!mediaRow) {
-            const fallbackPath = path.resolve(process.cwd(), 'public', 'images', decodedSubPath);
-            if (fs.existsSync(fallbackPath) && fs.statSync(fallbackPath).isFile()) {
-              const ext = path.extname(fallbackPath).toLowerCase();
-              const contentType = UPLOAD_MIME_TYPES[ext] || 'image/png';
-              res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': 'no-cache' });
-              fs.createReadStream(fallbackPath).pipe(res);
-              return;
+          const candidatePaths = [
+            path.resolve(UPLOADS_DIR, decodedSubPath),
+            path.resolve(process.cwd(), 'public', 'uploads', decodedSubPath),
+            path.resolve(process.cwd(), 'public', 'images', decodedSubPath),
+          ];
+
+          let foundFilePath = null;
+          for (const candidate of candidatePaths) {
+            if (fs.existsSync(candidate)) {
+              try {
+                const stat = fs.statSync(candidate);
+                if (stat.isFile()) {
+                  foundFilePath = candidate;
+                  break;
+                }
+              } catch {}
             }
+          }
+
+          if (!foundFilePath) {
             res.writeHead(404, { 'Content-Type': 'text/plain', 'X-Content-Type-Options': 'nosniff' });
             return res.end('Not Found');
           }
 
-          const filePath = path.resolve(UPLOADS_DIR, decodedSubPath);
-          try {
-            const realUploadDir = fs.realpathSync(UPLOADS_DIR);
-            const realFilePath = fs.realpathSync(filePath);
+          const ext = path.extname(foundFilePath).toLowerCase();
+          const contentType = UPLOAD_MIME_TYPES[ext] || 'application/octet-stream';
 
-            if (!realFilePath.startsWith(realUploadDir + path.sep)) {
-              res.writeHead(403, { 'Content-Type': 'text/plain', 'X-Content-Type-Options': 'nosniff' });
-              return res.end('Forbidden');
-            }
-
-            const stat = fs.statSync(realFilePath);
-            if (!stat.isFile()) {
-              res.writeHead(403, { 'Content-Type': 'text/plain', 'X-Content-Type-Options': 'nosniff' });
-              return res.end('Forbidden');
-            }
-
-            const ext = path.extname(realFilePath).toLowerCase();
-            const contentType = UPLOAD_MIME_TYPES[ext];
-            if (!contentType) {
-              res.writeHead(403, { 'Content-Type': 'text/plain', 'X-Content-Type-Options': 'nosniff' });
-              return res.end('Forbidden');
-            }
-
-            const headers = {
-              'Content-Type': contentType,
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'X-Content-Type-Options': 'nosniff',
-              'Content-Security-Policy': "default-src 'none'"
-            };
-            if (ext === '.pdf') {
-              const rawName = (mediaRow.original_name || path.basename(realFilePath)).replace(/[\r\n]/g, '');
-              const asciiFallback = rawName.replace(/["\\;]/g, '_').replace(/[^\x20-\x7E]/g, '_').trim() || 'document.pdf';
-              const percentEncoded = encodeURIComponent(rawName);
-              headers['Content-Disposition'] = `attachment; filename="${asciiFallback}"; filename*=UTF-8''${percentEncoded}`;
-            }
-
-            res.writeHead(200, headers);
-            fs.createReadStream(realFilePath).pipe(res);
-            return;
-          } catch {
-            const fallbackPath = path.resolve(process.cwd(), 'public', 'images', decodedSubPath);
-            if (fs.existsSync(fallbackPath) && fs.statSync(fallbackPath).isFile()) {
-              const ext = path.extname(fallbackPath).toLowerCase();
-              const contentType = UPLOAD_MIME_TYPES[ext] || 'image/png';
-              res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': 'no-cache' });
-              fs.createReadStream(fallbackPath).pipe(res);
-              return;
-            }
-            res.writeHead(404, { 'Content-Type': 'text/plain', 'X-Content-Type-Options': 'nosniff' });
-            return res.end('Not Found');
+          const headers = {
+            'Content-Type': contentType,
+            'Cache-Control': 'no-cache, must-revalidate',
+            'X-Content-Type-Options': 'nosniff',
+          };
+          if (ext === '.pdf') {
+            headers['Content-Disposition'] = `attachment; filename="${path.basename(foundFilePath)}"`;
           }
+
+          res.writeHead(200, headers);
+          fs.createReadStream(foundFilePath).pipe(res);
+          return;
         } else {
           next();
         }

@@ -27,8 +27,10 @@ scratch/
 
 # Data & Uploads
 /data/
-uploads/
+/uploads/
 *-uploads/
+!public/uploads/
+
 
 # Editor directories and files
 .vscode/*

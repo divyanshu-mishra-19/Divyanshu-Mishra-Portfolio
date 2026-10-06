@@ -622,8 +622,9 @@ export async function initDatabase() {
   try {
     db.prepare(`
       UPDATE profile 
-      SET avatar = REPLACE(avatar, '/uploads/', '/images/')
-      WHERE avatar LIKE '%/uploads/%'
+      SET avatar = REPLACE(avatar, '/uploads/', '/images/'),
+          workspace_illustration = REPLACE(workspace_illustration, '/uploads/', '/images/')
+      WHERE avatar LIKE '%/uploads/%' OR workspace_illustration LIKE '%/uploads/%'
     `).run();
 
     db.prepare(`
@@ -636,6 +637,31 @@ export async function initDatabase() {
       UPDATE achievements 
       SET images = REPLACE(images, '/uploads/', '/images/')
       WHERE images LIKE '%/uploads/%'
+    `).run();
+
+    db.prepare(`
+      UPDATE gallery 
+      SET images = REPLACE(images, '/uploads/', '/images/')
+      WHERE images LIKE '%/uploads/%'
+    `).run();
+
+    db.prepare(`
+      UPDATE positions 
+      SET images = REPLACE(images, '/uploads/', '/images/'),
+          logo = REPLACE(logo, '/uploads/', '/images/')
+      WHERE images LIKE '%/uploads/%' OR logo LIKE '%/uploads/%'
+    `).run();
+
+    db.prepare(`
+      UPDATE projects 
+      SET image = REPLACE(image, '/uploads/', '/images/')
+      WHERE image LIKE '%/uploads/%'
+    `).run();
+
+    db.prepare(`
+      UPDATE blog_posts 
+      SET image = REPLACE(REPLACE(image, '/uploads/', '/images/'), '/images/workspace.png', '/images/workspace.webp')
+      WHERE image LIKE '%/uploads/%' OR image LIKE '%/images/workspace.png%'
     `).run();
   } catch (err) {
     console.warn('[Database] Asset path migration notice:', err.message);

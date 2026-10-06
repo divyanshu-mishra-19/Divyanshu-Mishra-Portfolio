@@ -421,7 +421,7 @@ const server = http.createServer(async (req, res) => {
       return res.end(JSON.stringify({ error: 'Too many requests. Please try again later.' }));
     }
 
-  // 2. Uploaded media serving (from UPLOAD_DIR)
+  // 2. Uploaded media serving
   if (urlPath.startsWith('/uploads/')) {
     let decodedSubPath;
     try {
@@ -437,78 +437,34 @@ const server = http.createServer(async (req, res) => {
       return res.end('Forbidden');
     }
 
-    // Only serve files registered in media_files SQLite table
-    const mediaRow = db.prepare('SELECT id, filename, original_name FROM media_files WHERE filename = ?').get(decodedSubPath);
-    if (!mediaRow) {
-      // Fallback: check if asset exists in dist/images or public/images
-      const fallbackDistPath = path.resolve(DIST_DIR, 'images', decodedSubPath);
-      const fallbackPublicPath = path.resolve(process.cwd(), 'public', 'images', decodedSubPath);
-      const candidatePath = fs.existsSync(fallbackDistPath) ? fallbackDistPath : (fs.existsSync(fallbackPublicPath) ? fallbackPublicPath : null);
-          if (candidatePath) {
-            return serveStaticFile(req, res, candidatePath, `/images/${decodedSubPath}`);
+    const candidatePaths = [
+      path.resolve(UPLOAD_DIR, decodedSubPath),
+      path.resolve(DIST_DIR, 'uploads', decodedSubPath),
+      path.resolve(process.cwd(), 'public', 'uploads', decodedSubPath),
+      path.resolve(DIST_DIR, 'images', decodedSubPath),
+      path.resolve(process.cwd(), 'public', 'images', decodedSubPath),
+    ];
+
+    let foundFilePath = null;
+    for (const candidate of candidatePaths) {
+      if (fs.existsSync(candidate)) {
+        try {
+          const stat = fs.statSync(candidate);
+          if (stat.isFile()) {
+            foundFilePath = candidate;
+            break;
           }
+        } catch {}
+      }
+    }
+
+    if (!foundFilePath) {
       res.writeHead(404, { 'Content-Type': 'text/plain', 'X-Content-Type-Options': 'nosniff' });
       return res.end('Not Found');
     }
 
-    const filePath = path.resolve(UPLOAD_DIR, decodedSubPath);
-    try {
-      const realUploadDir = fs.realpathSync(UPLOAD_DIR);
-      const realFilePath = fs.realpathSync(filePath);
-
-      if (!realFilePath.startsWith(realUploadDir + path.sep)) {
-        res.writeHead(403, { 'Content-Type': 'text/plain', 'X-Content-Type-Options': 'nosniff' });
-        return res.end('Forbidden');
-      }
-
-      const stat = fs.statSync(realFilePath);
-      if (!stat.isFile()) {
-        res.writeHead(403, { 'Content-Type': 'text/plain', 'X-Content-Type-Options': 'nosniff' });
-        return res.end('Forbidden');
-      }
-
-      const ext = path.extname(realFilePath).toLowerCase();
-      const UPLOAD_MIME_TYPES = {
-        '.png': 'image/png',
-        '.jpg': 'image/jpeg',
-        '.jpeg': 'image/jpeg',
-        '.webp': 'image/webp',
-        '.pdf': 'application/pdf'
-      };
-      const contentType = UPLOAD_MIME_TYPES[ext];
-      if (!contentType) {
-        res.writeHead(403, { 'Content-Type': 'text/plain', 'X-Content-Type-Options': 'nosniff' });
-        return res.end('Forbidden');
-      }
-
-      applyCorsHeaders(req, res);
-      const headers = {
-        'Content-Type': contentType,
-        'X-Content-Type-Options': 'nosniff',
-        'Content-Security-Policy': "default-src 'none'",
-        'Cache-Control': 'public, max-age=86400'
-      };
-
-      if (ext === '.pdf') {
-        const rawName = (mediaRow.original_name || path.basename(realFilePath)).replace(/[\r\n]/g, '');
-        const asciiFallback = rawName.replace(/["\\;]/g, '_').replace(/[^\x20-\x7E]/g, '_').trim() || 'document.pdf';
-        const percentEncoded = encodeURIComponent(rawName);
-        headers['Content-Disposition'] = `attachment; filename="${asciiFallback}"; filename*=UTF-8''${percentEncoded}`;
-      }
-
-      res.writeHead(200, headers);
-      return fs.createReadStream(realFilePath).pipe(res);
-    } catch {
-      // Fallback: check if asset exists in dist/images or public/images
-      const fallbackDistPath = path.resolve(DIST_DIR, 'images', decodedSubPath);
-      const fallbackPublicPath = path.resolve(process.cwd(), 'public', 'images', decodedSubPath);
-      const candidatePath = fs.existsSync(fallbackDistPath) ? fallbackDistPath : (fs.existsSync(fallbackPublicPath) ? fallbackPublicPath : null);
-      if (candidatePath) {
-        return serveStaticFile(req, res, candidatePath, `/images/${decodedSubPath}`);
-      }
-      res.writeHead(404, { 'Content-Type': 'text/plain', 'X-Content-Type-Options': 'nosniff' });
-      return res.end('Not Found');
-    }
+    applyCorsHeaders(req, res);
+    return serveStaticFile(req, res, foundFilePath, `/uploads/${decodedSubPath}`);
   }
 
   // 3. Static files and client routes
