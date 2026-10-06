@@ -161,7 +161,9 @@ function AchievementModal({ achievement, initialTab = 'photos', onClose }) {
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [isFullscreenPhoto, setIsFullscreenPhoto] = useState(false);
 
-  const images = achievement?.images || [];
+  const images = (achievement?.images && achievement.images.length > 0)
+    ? achievement.images
+    : ['/images/workspace.webp'];
 
   useEffect(() => {
     if (!isFullscreenPhoto || !achievement) return;
@@ -180,12 +182,23 @@ function AchievementModal({ achievement, initialTab = 'photos', onClose }) {
 
   if (!achievement) return null;
 
+  const {
+    title = '',
+    badge = 'Achievement',
+    year = '',
+    category = 'Achievement',
+    issuer = '',
+    detailedDescription = achievement.desc || '',
+    keyHighlights = [],
+    skills = [],
+  } = achievement;
+
   const resolvedHighlights = (keyHighlights && keyHighlights.length > 0)
     ? keyHighlights
     : [
         getFallbackHighlight(achievement),
         achievement.desc || 'Demonstrated innovative technical engineering and competition merit.'
-      ];
+      ].filter(Boolean);
   const resolvedSkills = (skills && skills.length > 0)
     ? skills
     : getFallbackSkills(achievement);

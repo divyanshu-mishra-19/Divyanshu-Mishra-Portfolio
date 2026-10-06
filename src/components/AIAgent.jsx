@@ -28,7 +28,7 @@ function generateResponse(userText, liveData) {
   const certs = portfolio.certifications || [];
   const projects = portfolio.projects || [];
   const achievements = portfolio.achievements || [];
-  const positions = portfolio.positions || [];
+  const positions = portfolio.positionsOfResponsibility || portfolio.positions || [];
   const education = portfolio.education || [];
   const skills = portfolio.skills || [];
   const profile = portfolio.profile || portfolioData.profile || {};

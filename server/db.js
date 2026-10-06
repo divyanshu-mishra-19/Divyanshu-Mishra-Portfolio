@@ -272,7 +272,7 @@ export async function initDatabase() {
         hash,
         salt,
         'Divyanshu Mishra',
-        '/images/avatar.png',
+        '/images/avatar-f84ff6e6.webp',
         now,
         now
       );
@@ -309,8 +309,8 @@ export async function initDatabase() {
       p.name || 'Divyanshu Mishra',
       JSON.stringify(p.titles || []),
       p.heroSubtitle || '',
-      p.avatar || '/images/avatar.png',
-      p.workspaceIllustration || '/images/workspace.png',
+      p.avatar || '/images/avatar-f84ff6e6.webp',
+      p.workspaceIllustration || '/images/workspace.webp',
       p.status || 'Active & Building',
       p.email || 'divyanshu.nit.28@gmail.com',
       p.phone || '',
@@ -599,7 +599,7 @@ export async function initDatabase() {
         const stat = fs.statSync(fullPath);
         if (stat.isFile() && !file.startsWith('.')) {
           const ext = path.extname(file).toLowerCase();
-          const mime = ext === '.png' ? 'image/png' : ext === '.svg' ? 'image/svg+xml' : 'image/jpeg';
+          const mime = ext === '.webp' ? 'image/webp' : ext === '.png' ? 'image/png' : ext === '.svg' ? 'image/svg+xml' : ext === '.gif' ? 'image/gif' : 'image/jpeg';
           insertMedia.run(
             `media_img_${idx}`,
             file,
@@ -616,6 +616,29 @@ export async function initDatabase() {
       });
       console.log(`[Database] Seeded initial media files from /images`);
     }
+  }
+
+  // Auto-migrate legacy static assets from /uploads/ to /images/
+  try {
+    db.prepare(`
+      UPDATE profile 
+      SET avatar = REPLACE(avatar, '/uploads/', '/images/')
+      WHERE avatar LIKE '%/uploads/%'
+    `).run();
+
+    db.prepare(`
+      UPDATE certifications 
+      SET certificate_file = REPLACE(certificate_file, '/uploads/', '/images/')
+      WHERE certificate_file LIKE '%/uploads/%'
+    `).run();
+
+    db.prepare(`
+      UPDATE achievements 
+      SET images = REPLACE(images, '/uploads/', '/images/')
+      WHERE images LIKE '%/uploads/%'
+    `).run();
+  } catch (err) {
+    console.warn('[Database] Asset path migration notice:', err.message);
   }
 }
 

@@ -440,6 +440,13 @@ const server = http.createServer(async (req, res) => {
     // Only serve files registered in media_files SQLite table
     const mediaRow = db.prepare('SELECT id, filename, original_name FROM media_files WHERE filename = ?').get(decodedSubPath);
     if (!mediaRow) {
+      // Fallback: check if asset exists in dist/images or public/images
+      const fallbackDistPath = path.resolve(DIST_DIR, 'images', decodedSubPath);
+      const fallbackPublicPath = path.resolve(process.cwd(), 'public', 'images', decodedSubPath);
+      const candidatePath = fs.existsSync(fallbackDistPath) ? fallbackDistPath : (fs.existsSync(fallbackPublicPath) ? fallbackPublicPath : null);
+          if (candidatePath) {
+            return serveStaticFile(req, res, candidatePath, `/images/${decodedSubPath}`);
+          }
       res.writeHead(404, { 'Content-Type': 'text/plain', 'X-Content-Type-Options': 'nosniff' });
       return res.end('Not Found');
     }
@@ -492,6 +499,13 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, headers);
       return fs.createReadStream(realFilePath).pipe(res);
     } catch {
+      // Fallback: check if asset exists in dist/images or public/images
+      const fallbackDistPath = path.resolve(DIST_DIR, 'images', decodedSubPath);
+      const fallbackPublicPath = path.resolve(process.cwd(), 'public', 'images', decodedSubPath);
+      const candidatePath = fs.existsSync(fallbackDistPath) ? fallbackDistPath : (fs.existsSync(fallbackPublicPath) ? fallbackPublicPath : null);
+      if (candidatePath) {
+        return serveStaticFile(req, res, candidatePath, `/images/${decodedSubPath}`);
+      }
       res.writeHead(404, { 'Content-Type': 'text/plain', 'X-Content-Type-Options': 'nosniff' });
       return res.end('Not Found');
     }

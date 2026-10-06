@@ -51,6 +51,14 @@ export function viteApiPlugin() {
 
           const mediaRow = db.prepare('SELECT id, filename, original_name FROM media_files WHERE filename = ?').get(decodedSubPath);
           if (!mediaRow) {
+            const fallbackPath = path.resolve(process.cwd(), 'public', 'images', decodedSubPath);
+            if (fs.existsSync(fallbackPath) && fs.statSync(fallbackPath).isFile()) {
+              const ext = path.extname(fallbackPath).toLowerCase();
+              const contentType = UPLOAD_MIME_TYPES[ext] || 'image/png';
+              res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': 'no-cache' });
+              fs.createReadStream(fallbackPath).pipe(res);
+              return;
+            }
             res.writeHead(404, { 'Content-Type': 'text/plain', 'X-Content-Type-Options': 'nosniff' });
             return res.end('Not Found');
           }
@@ -95,6 +103,14 @@ export function viteApiPlugin() {
             fs.createReadStream(realFilePath).pipe(res);
             return;
           } catch {
+            const fallbackPath = path.resolve(process.cwd(), 'public', 'images', decodedSubPath);
+            if (fs.existsSync(fallbackPath) && fs.statSync(fallbackPath).isFile()) {
+              const ext = path.extname(fallbackPath).toLowerCase();
+              const contentType = UPLOAD_MIME_TYPES[ext] || 'image/png';
+              res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': 'no-cache' });
+              fs.createReadStream(fallbackPath).pipe(res);
+              return;
+            }
             res.writeHead(404, { 'Content-Type': 'text/plain', 'X-Content-Type-Options': 'nosniff' });
             return res.end('Not Found');
           }

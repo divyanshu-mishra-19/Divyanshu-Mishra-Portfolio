@@ -7,7 +7,7 @@ export const portfolioData = {
       "Full-Stack Developer"
     ],
     "heroSubtitle": "B.Tech EEE '28 @ NIT Nagaland | AI / ML Enthusiast",
-    "avatar": "/uploads/avatar-f84ff6e6.webp",
+    "avatar": "/images/avatar-f84ff6e6.webp",
     "workspaceIllustration": "/images/workspace-illustration.webp",
     "status": "Actively Researching & Building",
     "email": "divyanshu.nit.28@gmail.com",
@@ -392,8 +392,8 @@ export const portfolioData = {
       "issuer": "National Institute of Technology Nagaland",
       "category": "Hackathon & Innovation",
       "images": [
-        "/uploads/550a8753-ff7e-4fcb-b22f-f6dbe33710ac.png",
-        "/uploads/5fc27ae1-6163-4ea6-9707-e0095398e18b.png"
+        "/images/550a8753-ff7e-4fcb-b22f-f6dbe33710ac.png",
+        "/images/5fc27ae1-6163-4ea6-9707-e0095398e18b.png"
       ],
       "detailedDescription": "Participated in the Smart India Hackathon (SIH) 2026 Internal Hackathon as the Team Lead of Team Perceptrons. Our team developed an AI-Based Intelligent Video Analytics Platform for Border Surveillance using existing CCTV infrastructure, designed to enhance surveillance capabilities through software-based AI analytics without requiring dedicated new hardware.\n\nThe solution focused on applying computer vision and AI to existing CCTV streams for capabilities such as people and vehicle detection, tracking, face detection, number-plate recognition, virtual-fence violation detection, and suspicious-activity monitoring. The platform was designed to provide real-time alerts along with relevant evidence and camera-location context to support human decision-making.\n\nAs Team Lead, I contributed to the technical development, problem-solving, team coordination, solution refinement, and presentation of the project. The internal hackathon involved evaluating teams on problem understanding, innovation, technical feasibility, impact, and presentation.\n\nOur team secured 1st Position in the SIH 2026 Internal Hackathon at NIT Nagaland, marking a significant milestone in our journey toward the national-level Smart India Hackathon.",
       "keyHighlights": [
@@ -434,9 +434,9 @@ export const portfolioData = {
       "issuer": "Capabl India",
       "category": "Agentic AI & Hackathon",
       "images": [
-        "/uploads/1801a77e-e59d-4cec-bd67-8c3e87699077.jpg",
-        "/uploads/e8e14174-218b-4846-aec2-7c06a0f21a7a.jpg",
-        "/uploads/e0affaa2-6122-4631-a259-91bff0acd043.png"
+        "/images/1801a77e-e59d-4cec-bd67-8c3e87699077.jpg",
+        "/images/e8e14174-218b-4846-aec2-7c06a0f21a7a.jpg",
+        "/images/e0affaa2-6122-4631-a259-91bff0acd043.png"
       ],
       "detailedDescription": "Participated in the 3-Day Agentic AI Saksham Workshop & Hackathon conducted by Capabl India in collaboration with the Ministry of Education, Government of Nagaland, and Kohima Science College. The event provided hands-on exposure to building and integrating AI agents using n8n workflows and applying Agentic AI concepts to real-world problems.\n\nWorking with my teammate Navnit Kumar, I contributed throughout the journey from brainstorming and developing the solution to implementation, pitching, and handling the final Q&A session. Working under strict timelines helped strengthen my technical problem-solving, teamwork, time management, adaptability, and communication skills.\n\nOur team was selected among the Top 5 teams out of 26 participating teams. Although we could not secure a Top 3 position, the experience provided valuable mentorship, industry exposure, and practical understanding of Agentic AI development.",
       "keyHighlights": [
@@ -477,8 +477,8 @@ export const portfolioData = {
       "issuer": "NIT Nagaland — Innovation & Incubation Cell",
       "category": "Entrepreneurship & Innovation",
       "images": [
-        "/uploads/321a7dfd-cd8a-4b17-bdb1-4de474520834.jpg",
-        "/uploads/e68e5ea7-b582-4ad8-83bb-6e1b8fad298b.jpg"
+        "/images/321a7dfd-cd8a-4b17-bdb1-4de474520834.jpg",
+        "/images/e68e5ea7-b582-4ad8-83bb-6e1b8fad298b.jpg"
       ],
       "detailedDescription": "Participated in the National Entrepreneurship Day – Ideathon Competition organized as part of the institute’s entrepreneurship and innovation initiatives. The competition provided an opportunity to develop and present an innovative idea while focusing on real-world problem-solving and entrepreneurial thinking.\n\nThrough the ideation and presentation process, I gained valuable experience in identifying problems, developing innovative solutions, communicating ideas effectively, and presenting the entrepreneurial potential of a solution. The experience strengthened my ability to think creatively, approach challenges from a problem-solving perspective, and transform ideas into meaningful solutions.\n\nI was honoured to secure the First Prize in the competition. I am grateful to Dr. D. Ganga, Innovation Ambassador IIC & Associate Dean (Entrepreneurship and Incubation Cell), for her constant encouragement and support, and to Prof. (Dr.) A. Elayaperumal, Director, NIT Nagaland, and the institute for fostering a strong culture of innovation and entrepreneurship.",
       "keyHighlights": [
@@ -518,8 +518,8 @@ export const portfolioData = {
       "issuer": "National Institute of Technology, Nagaland",
       "category": "Talent & Personality",
       "images": [
-        "/uploads/c23d634d-ba75-4472-862c-6219e82a1af0.png",
-        "/uploads/52f8be12-3511-49e4-9801-14b3a431ac1b.png"
+        "/images/c23d634d-ba75-4472-862c-6219e82a1af0.png",
+        "/images/52f8be12-3511-49e4-9801-14b3a431ac1b.png"
       ],
       "detailedDescription": "Participated in the Fresher’s Day celebration “Yuva 2024” at the National Institute of Technology Nagaland, an event that provided an opportunity for students to showcase their creativity, confidence, personality, and individual talents.\n\nThrough the various activities and stage performances, I had the opportunity to step outside my comfort zone, demonstrate my abilities, and interact with fellow students in a competitive yet enjoyable environment. The experience helped strengthen my confidence, communication, stage presence, and ability to perform under pressure.\n\nI was honoured with the title of “Mr. Talent” at the event. This recognition remains a memorable milestone from my first year at NIT Nagaland and encouraged me to participate more actively in extracurricular, technical, and leadership activities.",
       "keyHighlights": [
@@ -785,7 +785,7 @@ export const portfolioData = {
       "expiryDate": "No Expiration",
       "credentialId": "",
       "credentialUrl": "",
-      "certificateFile": "/uploads/99eb0086-44fb-43e3-92b0-0e158615aa1f.png",
+      "certificateFile": "/images/99eb0086-44fb-43e3-92b0-0e158615aa1f.png",
       "description": "Certificate of Participation for AI Innovation Hackathon 2026 – Build Real-World AI Solutions, organized by Bharat Academix. Participated as a member of Team Alpha, representing National Institute of Technology (NIT), Nagaland."
     },
     {
@@ -796,7 +796,7 @@ export const portfolioData = {
       "expiryDate": "No Expiration",
       "credentialId": "",
       "credentialUrl": "",
-      "certificateFile": "/uploads/d4bfe619-ba3e-49fc-8724-0206bba369dc.png",
+      "certificateFile": "/images/d4bfe619-ba3e-49fc-8724-0206bba369dc.png",
       "description": "Successfully completed a training program on Energy Conservation & Sustainability, with a focus on the Energy Conservation and Sustainable Building Code (ECSBC) and Eco Niwas Samhita (ENS). Gained insights into energy-efficient building practices, sustainability standards, and energy conservation principles in the built environment."
     },
     {
@@ -807,7 +807,7 @@ export const portfolioData = {
       "expiryDate": "No Expiration",
       "credentialId": "",
       "credentialUrl": "",
-      "certificateFile": "/uploads/993f963f-06a4-4679-a4ea-da3a758c3764.png",
+      "certificateFile": "/images/993f963f-06a4-4679-a4ea-da3a758c3764.png",
       "description": "Top 5 Finalist among 26 teams in the Capabl India Agentic AI Hackathon. Developed AI-agent solutions using n8n, demonstrating skills in AI automation, workflow orchestration, problem solving, and innovation."
     }
   ],

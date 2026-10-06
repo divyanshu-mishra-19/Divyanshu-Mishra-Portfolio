@@ -494,6 +494,7 @@ function BookCardDesktop({ project, expanded, onHover, onSelect }) {
             href={safeHref(project.liveUrl || project.githubUrl)}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
             className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-sans font-bold text-xs shadow-lg transition-all hover:scale-[1.03] active:scale-[0.98]"
             style={{
               background: `linear-gradient(135deg, ${theme.spineHighlight}, #f59e0b)`,
@@ -509,6 +510,7 @@ function BookCardDesktop({ project, expanded, onHover, onSelect }) {
             href={safeHref(project.githubUrl)}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
             className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 text-slate-200 font-sans font-semibold text-xs transition-all hover:scale-[1.03] active:scale-[0.98]"
           >
             <GithubIcon className="w-3.5 h-3.5" />
@@ -652,6 +654,7 @@ function BookCardMobile({ project, expanded, onToggle }) {
               href={safeHref(project.liveUrl || project.githubUrl)}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 rounded-xl font-sans font-bold text-xs shadow-md"
               style={{
                 background: `linear-gradient(135deg, ${theme.spineHighlight}, #f59e0b)`,
@@ -666,6 +669,7 @@ function BookCardMobile({ project, expanded, onToggle }) {
               href={safeHref(project.githubUrl)}
               target="_blank"
               rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
               className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 font-sans font-semibold text-xs"
             >
               <GithubIcon className="w-3.5 h-3.5" />
