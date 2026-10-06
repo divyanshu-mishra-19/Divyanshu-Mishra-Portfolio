@@ -8,7 +8,7 @@ export const portfolioData = {
     ],
     "heroSubtitle": "B.Tech EEE '28 @ NIT Nagaland | AI / ML Enthusiast",
     "avatar": "/images/avatar-f84ff6e6.webp",
-    "workspaceIllustration": "/images/workspace-illustration.webp",
+    "workspaceIllustration": "/uploads/39db4f23-ed42-4e4a-bf70-f4c1b5e0a579.jpg",
     "status": "Actively Researching & Building",
     "email": "divyanshu.nit.28@gmail.com",
     "phone": "+91-77******53",
@@ -809,6 +809,17 @@ export const portfolioData = {
       "credentialUrl": "",
       "certificateFile": "/images/993f963f-06a4-4679-a4ea-da3a758c3764.png",
       "description": "Top 5 Finalist among 26 teams in the Capabl India Agentic AI Hackathon. Developed AI-agent solutions using n8n, demonstrating skills in AI automation, workflow orchestration, problem solving, and innovation."
+    },
+    {
+      "id": "cert_1791272610911",
+      "name": "Certificate of Acknowledgement – Bharatiya Antariksh Hackathon 2025",
+      "issuingOrganization": "ISRO - Indian Space Research Organization",
+      "issueDate": "2025",
+      "expiryDate": "No Expiration",
+      "credentialId": "",
+      "credentialUrl": "",
+      "certificateFile": "",
+      "description": "Recognized by ISRO for innovative idea submission at the Bharatiya Antariksh Hackathon 2025."
     }
   ],
   "gallery": [
@@ -822,14 +833,10 @@ export const portfolioData = {
       "role": "Lead Organizer & Technical Lead",
       "metric": "200+ Hackers • Regional Hackathon",
       "images": [
-        "/images/hackdays-brahma.webp",
-        "/images/hackathon-ai-team.webp",
-        "/images/workspace.webp"
+        "/uploads/98ef01b9-9992-49ed-be2d-63631706d33f.jpg"
       ],
       "captions": [
-        "Hackdays Nagaland & Hack $ Brahma main developer hall and live coding sprint",
-        "Organizer desk and student teams building innovative solutions",
-        "Technical jury evaluation and closing ceremony"
+        "Hackdays Nagaland & Hack $ Brahma"
       ],
       "description": "Founded and organized Hackdays Nagaland and Hack $ Brahma, landmark regional hackathons empowering developers and builders across the North East with mentorship, prizes, and industry challenges.",
       "featured": true
@@ -844,14 +851,16 @@ export const portfolioData = {
       "role": "Technical Secretary / Co-Organizer",
       "metric": "200+ Participants • 15+ Events",
       "images": [
-        "/images/tech-avinya-fest.webp",
-        "/images/workspace.webp",
-        "/images/avatar.webp"
+        "/uploads/37fc0892-31db-44be-9f77-a8edb658bea2.jpg",
+        "/uploads/c420a416-ef55-44e4-8544-27d83dda4cd0.jpg",
+        "/uploads/17a1e73a-0ca3-48dd-817f-8b5ed290d0d6.jpg",
+        "/uploads/c529bfb7-f2db-4a88-8dc4-b5007f269df8.jpg"
       ],
       "captions": [
-        "Tech Avinya main stage presentation & robotics demonstration",
-        "Organizing committee workspace & event setup",
-        "Official co-organizer and Technical Secretary role"
+        "Tech Avinya — NIT Nagaland 1st Tech Fest",
+        "Tech Avinya — NIT Nagaland 1st Tech Fest",
+        "Tech Avinya — NIT Nagaland 1st Tech Fest",
+        "Tech Avinya — NIT Nagaland 1st Tech Fest"
       ],
       "description": "Spearheaded and co-organized Tech Avinya, the inaugural official technical fest of National Institute of Technology, Nagaland. Managed 30+ committee members, coordinated 15+ corporate sponsors, and conducted 15+ technical competitions spanning AI, robotics, coding, and design.",
       "featured": true
@@ -866,14 +875,12 @@ export const portfolioData = {
       "role": "Lead Architect",
       "metric": "Top 5 Finalist • 26 Teams",
       "images": [
-        "/images/hackathon-ai-team.webp",
-        "/images/vinylsheetz.webp",
-        "/images/workspace.webp"
+        "/uploads/1eb07fd7-6808-492e-a10e-5aa074a2facb.jpg",
+        "/uploads/6538346d-a2da-43d4-8986-1f4c82eb3cd2.jpg"
       ],
       "captions": [
-        "Engineering team deep in multi-agent workflow architecture",
-        "Agentic AI decision graphs and tool execution visualization",
-        "Final sprint submission and code evaluation"
+        "Capabl Agentic AI Saksham National Finals",
+        "Capabl Agentic AI Saksham National Finals"
       ],
       "description": "Secured Top 5 National Finalist ranking among 26 shortlisted teams across India. Built autonomous reasoning agent pipelines using n8n, Python, and multi-step tool integration that automate research, data extraction, and cross-channel alerts.",
       "featured": false
@@ -888,14 +895,12 @@ export const portfolioData = {
       "role": "1st Prize Winner",
       "metric": "First Prize Winner",
       "images": [
-        "/images/ideathon-stage-award.webp",
-        "/images/beadwork.webp",
-        "/images/workspace.webp"
+        "/uploads/793c6022-8193-45cd-9e9e-c3ff9a75871f.jpg",
+        "/uploads/4c5ff281-5fe7-4499-adfa-270829fcc539.jpg"
       ],
       "captions": [
-        "Dignitaries presenting the 1st prize certificate on stage",
-        "High-fidelity interactive prototype engineered in React",
-        "Preparation and unit economics model validation"
+        "National Entrepreneurship Ideathon 1st Prize",
+        "National Entrepreneurship Ideathon 1st Prize"
       ],
       "description": "Awarded First Prize for our rapid innovation prototype. Applied design thinking and scalable web architecture in React.js to address high-impact societal challenges.",
       "featured": false
@@ -910,14 +915,24 @@ export const portfolioData = {
       "role": "Student Coordinator",
       "metric": "250+ Educators • 5 Days",
       "images": [
-        "/images/sam-intel.webp",
-        "/images/workspace.webp",
-        "/images/homesprint.webp"
+        "/uploads/24774d2e-e69f-407e-8aa0-6fd7433d2213.jpg",
+        "/uploads/2ec8f477-7693-4ac3-b0f6-8c51d06b1c6e.jpg",
+        "/uploads/c8eadef1-b1d9-4821-a4e2-534e3aaa14e4.jpg",
+        "/uploads/5a813a69-159c-4999-940a-fd6fca45d0bb.jpg",
+        "/uploads/1056f3d4-7495-438c-abab-e29211c4e32f.jpg",
+        "/uploads/f2f1b797-8ae3-4e40-af0b-ff060a9e1ff3.jpg",
+        "/uploads/bad84fdb-d53f-48d0-a5e4-25a16a4f94bf.png",
+        "/uploads/395b9596-3750-4ee5-8c3f-d5a2a5db06c0.jpg"
       ],
       "captions": [
-        "Workshop and seminar hall coordination",
-        "Volunteer briefing and operations monitoring",
-        "Session registration and attendee verification"
+        "Ministry of Education IDE Bootcamp",
+        "Ministry of Education IDE Bootcamp",
+        "Ministry of Education IDE Bootcamp",
+        "Ministry of Education IDE Bootcamp",
+        "Ministry of Education IDE Bootcamp",
+        "Ministry of Education IDE Bootcamp",
+        "Ministry of Education IDE Bootcamp",
+        "Ministry of Education IDE Bootcamp"
       ],
       "description": "Managed logistics, operations, and hospitality for two prestigious government-funded bootcamps: Innovation Design & Entrepreneurship (IDE) Bootcamp for PM SHRI Educators. Led a team of 10 student volunteers across 5 intensive conference days.",
       "featured": false
@@ -932,38 +947,14 @@ export const portfolioData = {
       "role": "Operations & Sponsorship Lead",
       "metric": "500+ Attendees • State-Level",
       "images": [
-        "/images/campus-fest-moments.webp",
-        "/images/tech-avinya-fest.webp",
-        "/images/avatar.webp"
+        "/uploads/4131a6fe-d766-49da-b37a-fa3c92e24fc7.jpg",
+        "/uploads/4d553051-bb02-434d-a0de-736ed9d35f51.jpg"
       ],
       "captions": [
-        "Vibrant evening crowd celebration and concert lights",
-        "Stage management and coordinator team during fest events",
-        "Festival leadership and campus student fraternity"
+        "Ekarikthin — Nagaland 2nd Largest Cultural Fest",
+        "Ekarikthin — Nagaland 2nd Largest Cultural Fest"
       ],
       "description": "Core coordinator for Ekarikthin, Nagaland’s 2nd largest inter-college festival. Led inter-team logistics, university communications, stage operations, and sponsor relations.",
-      "featured": false
-    },
-    {
-      "id": "traffic-anpr-lab",
-      "title": "Edge Computer Vision & ANPR Testing Lab",
-      "section": "moments",
-      "category": "Campus Moments",
-      "date": "Jan 2026",
-      "location": "NIT Nagaland Systems Lab",
-      "role": "Computer Vision Engineer",
-      "metric": "84% Acc • Edge CPU Inference",
-      "images": [
-        "/images/homesprint.webp",
-        "/images/workspace.webp",
-        "/images/sam-intel.webp"
-      ],
-      "captions": [
-        "Real-time ANPR inference pipeline and bounding boxes",
-        "Hardware setup and multi-stream camera testing",
-        "Benchmarking CPU frame-rate and EasyOCR accuracy"
-      ],
-      "description": "Field testing of YOLOv8 multi-object tracking and EasyOCR on CPU-constrained edge hardware. Achieved 84% detection accuracy across multiple violation categories with 40% reduction in duplicate logs.",
       "featured": false
     }
   ],
@@ -1057,7 +1048,7 @@ export const portfolioData = {
     "stats": [
       {
         "label": "Engineering Projects",
-        "value": "6+"
+        "value": "4+"
       },
       {
         "label": "National Recognitions",
@@ -1065,11 +1056,11 @@ export const portfolioData = {
       },
       {
         "label": "Hackers Mentored",
-        "value": "200+"
+        "value": "100+"
       },
       {
         "label": "CGPA at NIT Nagaland",
-        "value": "8.81"
+        "value": "8.80"
       }
     ],
     "contact_notice": "Always open to high-impact software engineering roles, research collaborations in computer vision & multimodal AI, and speaking or hackathon mentoring engagements.",
